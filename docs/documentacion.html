@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PekePBX-BC - Documentacion del Sistema</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --orange: #d97706;
+      --orange-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+      color: white;
+      padding: 60px 0 50px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 8px; }
+    .hero .subtitle { font-size: 1.15rem; opacity: 0.85; max-width: 700px; margin: 0 auto; }
+    .hero .badges { margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .hero .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      padding: 5px 14px; border-radius: 20px; font-size: 0.8rem;
+    }
+
+    /* Navigation */
+    .nav-bar {
+      background: white; border-bottom: 1px solid var(--gray-200);
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .nav-bar .container { display: flex; gap: 0; overflow-x: auto; }
+    .nav-bar a {
+      padding: 14px 18px; font-size: 0.82rem; font-weight: 500;
+      color: var(--gray-500); text-decoration: none; white-space: nowrap;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .nav-bar a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 50px 0; }
+    section:nth-child(even) { background: white; }
+
+    h2 {
+      font-size: 1.7rem; font-weight: 700; color: var(--gray-900);
+      margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+    }
+    h2 .icon { font-size: 1.4rem; }
+    h3 { font-size: 1.15rem; font-weight: 600; color: var(--gray-800); margin: 24px 0 10px; }
+    .section-desc { color: var(--gray-500); margin-bottom: 28px; font-size: 0.95rem; }
+
+    p { margin-bottom: 12px; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .card {
+      background: white; border: 1px solid var(--gray-200); border-radius: 12px;
+      padding: 22px; transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    section:nth-child(even) .card { background: var(--gray-50); }
+    .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .card-title .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .card p { font-size: 0.88rem; color: var(--gray-500); margin: 0; }
+
+    /* Flow diagram */
+    .flow {
+      background: var(--gray-900); color: #e5e7eb; border-radius: 12px;
+      padding: 28px; font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 0.82rem; line-height: 1.7; overflow-x: auto; white-space: pre;
+    }
+    .flow .green { color: #34d399; }
+    .flow .blue { color: #60a5fa; }
+    .flow .orange { color: #fbbf24; }
+    .flow .red { color: #f87171; }
+    .flow .cyan { color: #22d3ee; }
+    .flow .dim { color: #6b7280; }
+    .flow .purple { color: #a78bfa; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--gray-200); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead { background: var(--gray-100); }
+    th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--gray-700); white-space: nowrap; }
+    td { padding: 10px 16px; border-top: 1px solid var(--gray-200); color: var(--gray-700); }
+    tr:hover td { background: var(--gray-50); }
+
+    /* Status badges */
+    .status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600;
+    }
+    .status.ok { background: var(--green-light); color: var(--green); }
+    .status.warn { background: var(--orange-light); color: var(--orange); }
+    .status.err { background: var(--red-light); color: var(--red); }
+    .status.info { background: var(--blue-light); color: var(--blue); }
+    .status.purple { background: #ede9fe; color: #7c3aed; }
+
+    /* Screen pop mockups */
+    .mockups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .mockup {
+      border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-200);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: white;
+    }
+    .mockup-header { padding: 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; }
+    .mockup-header.green { background: #ecfdf5; color: #065f46; border-bottom: 1px solid #a7f3d0; }
+    .mockup-header.indigo { background: #eef2ff; color: #3730a3; border-bottom: 1px solid #c7d2fe; }
+    .mockup-header.orange { background: #fffbeb; color: #92400e; border-bottom: 1px solid #fde68a; }
+    .mockup-body { padding: 16px; }
+    .mockup-body .phone { font-size: 1.15rem; font-weight: 700; color: var(--gray-900); }
+    .mockup-body .name { font-size: 0.88rem; color: var(--gray-600); margin-top: 2px; }
+    .mockup-body .hint { font-size: 0.78rem; color: var(--gray-400); margin-top: 8px; }
+    .mockup-body .btns { display: flex; gap: 6px; margin-top: 12px; }
+    .mockup-body .btn {
+      padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+      border: none; cursor: default; color: white;
+    }
+    .mockup-body .btn.primary { background: #4f46e5; }
+    .mockup-body .btn.green-btn { background: #059669; }
+    .mockup-body .btn.blue-btn { background: #2563eb; }
+    .mockup-body .btn.outline { background: white; color: var(--gray-700); border: 1px solid var(--gray-300); }
+
+    /* Arch diagram boxes */
+    .arch { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .arch-col { display: flex; flex-direction: column; gap: 10px; }
+    .arch-box {
+      border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px;
+      background: white; font-size: 0.82rem;
+    }
+    .arch-box.highlight { border-color: var(--primary); background: var(--primary-light); }
+    .arch-box .label { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+    .arch-box .sub { color: var(--gray-500); font-size: 0.78rem; }
+    .arch-arrow { text-align: center; color: var(--gray-400); font-size: 1.2rem; padding: 4px 0; }
+
+    /* Limitations list */
+    .limit-list { list-style: none; padding: 0; }
+    .limit-list li {
+      padding: 12px 16px; border-left: 3px solid var(--red);
+      background: var(--red-light); margin-bottom: 8px; border-radius: 0 8px 8px 0;
+      font-size: 0.88rem;
+    }
+    .limit-list li strong { color: var(--red); }
+
+    .works-list { list-style: none; padding: 0; }
+    .works-list li {
+      padding: 12px 16px; border-left: 3px solid var(--green);
+      background: var(--green-light); margin-bottom: 8px; border-radius: 0 8px 8px 0;
+      font-size: 0.88rem;
+    }
+    .works-list li strong { color: var(--green); }
+
+    /* Footer */
+    footer {
+      background: var(--gray-900); color: var(--gray-500);
+      padding: 30px 0; text-align: center; font-size: 0.82rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.8rem; }
+      .arch { grid-template-columns: 1fr; }
+      .mockups { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="container">
+      <h1>PekePBX-BC</h1>
+      <p class="subtitle">Integracion de Asterisk (PekePBX) con Microsoft Dynamics 365 Business Central. Screen pop automatico, registro de llamadas y busqueda dual contactos + proveedores.</p>
+      <div class="badges">
+        <span class="badge">&#9679; Express + SQLite</span>
+        <span class="badge">&#9679; Vue 3 + Tailwind</span>
+        <span class="badge">&#9679; AMI + SSE</span>
+        <span class="badge">&#9679; SOAP + OData</span>
+        <span class="badge">&#9679; Multi-Tenant</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav-bar">
+    <div class="container">
+      <a href="#arquitectura">Arquitectura</a>
+      <a href="#flujo">Flujo de Llamada</a>
+      <a href="#screenpop">Screen Pop</a>
+      <a href="#busqueda">Busqueda BC</a>
+      <a href="#funciona">Cuando Funciona</a>
+      <a href="#no-funciona">Cuando NO Funciona</a>
+      <a href="#componentes">Componentes</a>
+      <a href="#api">API Endpoints</a>
+      <a href="#seguridad">Seguridad</a>
+    </div>
+  </div>
+
+  <!-- ARQUITECTURA -->
+  <section id="arquitectura">
+    <div class="container">
+      <h2><span class="icon">&#128736;</span> Arquitectura General</h2>
+      <p class="section-desc">El sistema conecta tres mundos: la centralita Asterisk (PekePBX), el servidor Node.js y Microsoft Business Central en la nube.</p>
+
+      <div class="arch">
+        <!-- Col 1: External -->
+        <div class="arch-col">
+          <div class="arch-box">
+            <div class="label">&#9742; Asterisk / PekePBX</div>
+            <div class="sub">AMI en 62.210.62.5:5100<br>Eventos: DialBegin, DialEnd, Hangup</div>
+          </div>
+          <div class="arch-arrow">&#8595;</div>
+          <div class="arch-box">
+            <div class="label">&#127760; Microsoft Business Central</div>
+            <div class="sub">SOAP: WSRegistroLlamadas<br>OData v4: /Vendor<br>OAuth 2.0 client credentials</div>
+          </div>
+        </div>
+
+        <!-- Col 2: Server -->
+        <div class="arch-col">
+          <div class="arch-box highlight">
+            <div class="label">&#128421; Servidor Node.js (:4500)</div>
+            <div class="sub">
+              <strong>ami.js</strong> &mdash; Conexion TCP a Asterisk<br>
+              <strong>bc.js</strong> &mdash; OAuth + SOAP + OData<br>
+              <strong>bcHooks.js</strong> &mdash; Logica screen pop<br>
+              <strong>sse.js</strong> &mdash; Streaming a clientes<br>
+              <strong>SQLite</strong> &mdash; Users, sessions, config, logs
+            </div>
+          </div>
+        </div>
+
+        <!-- Col 3: Client -->
+        <div class="arch-col">
+          <div class="arch-box">
+            <div class="label">&#128187; Panel Admin</div>
+            <div class="sub">Dashboard con logs en tiempo real<br>Config BC por tenant<br>CRUD de usuarios</div>
+          </div>
+          <div class="arch-arrow">&#8595;</div>
+          <div class="arch-box">
+            <div class="label">&#128222; Panel Operador</div>
+            <div class="sub">Selecciona empresa + extension<br>Recibe screen pop via SSE<br>BC se abre automaticamente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLUJO DE LLAMADA -->
+  <section id="flujo">
+    <div class="container">
+      <h2><span class="icon">&#128260;</span> Flujo Completo de una Llamada</h2>
+      <p class="section-desc">Desde que suena el telefono hasta que se registra la llamada en Business Central.</p>
+
+      <div class="flow"><span class="dim">  1.</span> Llamada entrante en PBX
+     <span class="orange">AMI Event: DialBegin</span>
+     CallerIDNum=<span class="cyan">"667601605"</span>  DestChannel=<span class="cyan">"SIP/ext20242011-..."</span>
+                    <span class="dim">|</span>
+<span class="dim">  2.</span> bcHooks detecta tenant <span class="purple">20242</span> y extension <span class="purple">011</span>
+     Guarda en activeCalls, inicia pre-busqueda
+                    <span class="dim">|</span>
+<span class="dim">  3.</span> <span class="blue">SOAP ObtenerURL("667601605")</span> &rarr; Busca en <span class="green">Contactos</span> BC
+     <span class="dim">|</span>
+     <span class="dim">+--</span> <span class="green">Encontrado?</span> &rarr; type=<span class="green">'contact'</span>, guarda URL ficha
+     <span class="dim">|</span>
+     <span class="dim">+--</span> <span class="orange">No encontrado</span> &rarr; Fallback a paso 4
+                    <span class="dim">|</span>
+<span class="dim">  4.</span> <span class="blue">OData Vendor search("667601605")</span> &rarr; Busca en <span class="purple">Proveedores</span> BC
+     Campos: PhoneNo, PhoneNo2-5, MobilePhoneNo
+     <span class="dim">|</span>
+     <span class="dim">+--</span> <span class="green">Encontrado?</span> &rarr; type=<span class="purple">'vendor'</span>, guarda URL ficha proveedor
+     <span class="dim">|</span>
+     <span class="dim">+--</span> <span class="orange">No encontrado</span> &rarr; type=null, URL fallback a BC
+                    <span class="dim">|</span>
+<span class="dim">  5.</span> <span class="dim">[Telefono sigue sonando... resultado cacheado en activeCalls]</span>
+                    <span class="dim">|</span>
+<span class="dim">  6.</span> Operador contesta
+     <span class="orange">AMI Event: DialEnd</span> (DialStatus=ANSWER)
+                    <span class="dim">|</span>
+<span class="dim">  7.</span> <span class="cyan">SSE &rarr; bc_screen_pop</span> enviado al sipPeer del operador
+     {phone, bcUrl, found, type, name, newContactUrl}
+                    <span class="dim">|</span>
+<span class="dim">  8.</span> <span class="green">ScreenPop.vue</span> muestra popup + auto-abre BC en ventana
+                    <span class="dim">|</span>
+<span class="dim">  9.</span> Operador trabaja la llamada, cuelga
+     <span class="orange">AMI Event: Hangup</span>
+                    <span class="dim">|</span>
+<span class="dim"> 10.</span> <span class="blue">SOAP RegistrarLlamada(ext, phone)</span> &rarr; Registra en BC
+     call_log actualizado: answered=1, registered=1</div>
+
+      <h3>Tiempos tipicos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Paso</th><th>Accion</th><th>Duracion</th></tr></thead>
+          <tbody>
+            <tr><td>3</td><td>SOAP ObtenerURL</td><td>~400-800ms</td></tr>
+            <tr><td>4</td><td>OData Vendor (exacto)</td><td>~300-600ms</td></tr>
+            <tr><td>4</td><td>OData Vendor (cache normalizada, 1a vez)</td><td>~2-4s</td></tr>
+            <tr><td>4</td><td>OData Vendor (cache hit)</td><td>&lt;1ms</td></tr>
+            <tr><td>7</td><td>SSE al navegador</td><td>&lt;50ms</td></tr>
+            <tr><td>10</td><td>SOAP RegistrarLlamada</td><td>~300-600ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top: 12px; font-size: 0.85rem; color: var(--gray-500);">
+        La pre-busqueda (pasos 3-4) ocurre <strong>mientras suena</strong>, asi que cuando el operador contesta, el resultado ya esta listo. No hay latencia perceptible en el screen pop.
+      </p>
+    </div>
+  </section>
+
+  <!-- SCREEN POP -->
+  <section id="screenpop">
+    <div class="container">
+      <h2><span class="icon">&#128241;</span> Screen Pop &mdash; 3 Estados</h2>
+      <p class="section-desc">El popup que aparece cuando el operador contesta una llamada. Se auto-abre Business Central en una ventana/tab reutilizable.</p>
+
+      <div class="mockups">
+        <!-- Contact found -->
+        <div class="mockup">
+          <div class="mockup-header green">&#9742; Contacto encontrado</div>
+          <div class="mockup-body">
+            <div class="phone">933795032</div>
+            <div class="hint">Se abrira la ficha en Business Central</div>
+            <div class="btns">
+              <div class="btn blue-btn">&#xf3ca; Abrir ficha</div>
+              <div class="btn outline">Cerrar</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendor found -->
+        <div class="mockup">
+          <div class="mockup-header indigo">&#128666; Proveedor encontrado</div>
+          <div class="mockup-body">
+            <div class="phone">667601605</div>
+            <div class="name">Eva Maria Garcia Garcia</div>
+            <div class="hint">Se abrira la ficha de proveedor en BC</div>
+            <div class="btns">
+              <div class="btn primary">&#128666; Abrir proveedor</div>
+              <div class="btn outline">Cerrar</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Not found -->
+        <div class="mockup">
+          <div class="mockup-header orange">&#9742; Contacto no encontrado</div>
+          <div class="mockup-body">
+            <div class="phone">612345678</div>
+            <div class="hint">Este numero no esta registrado en BC</div>
+            <div class="btns">
+              <div class="btn green-btn">&#10010; Crear contacto</div>
+              <div class="btn blue-btn">Abrir BC</div>
+              <div class="btn outline">Cerrar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Comportamiento</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Estado</th><th>Color</th><th>Auto-abre</th><th>Auto-cierra</th><th>Accion principal</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="status ok">Contacto</span></td>
+              <td>Verde</td>
+              <td>Ficha del contacto</td>
+              <td>15 segundos</td>
+              <td>Abrir ficha</td>
+            </tr>
+            <tr>
+              <td><span class="status purple">Proveedor</span></td>
+              <td>Indigo</td>
+              <td>Ficha del proveedor (page 26)</td>
+              <td>15 segundos</td>
+              <td>Abrir proveedor</td>
+            </tr>
+            <tr>
+              <td><span class="status warn">No encontrado</span></td>
+              <td>Naranja</td>
+              <td>Pagina crear contacto (page 5052)</td>
+              <td>30 segundos</td>
+              <td>Crear contacto en BC</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUSQUEDA EN BC -->
+  <section id="busqueda">
+    <div class="container">
+      <h2><span class="icon">&#128270;</span> Busqueda en Business Central</h2>
+      <p class="section-desc">Dos estrategias de busqueda secuenciales: primero SOAP para contactos, luego OData para proveedores.</p>
+
+      <h3>1. Busqueda de Contactos (SOAP)</h3>
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title"><span class="dot" style="background: var(--green);"></span> WSRegistroLlamadas.ObtenerURL</div>
+        <p>Codeunit SOAP personalizado que busca en la tabla de Contactos de BC por numero de telefono. Devuelve la URL directa a la ficha del contacto o string vacio.</p>
+        <p style="margin-top: 8px;"><strong>Protocolo:</strong> SOAP XML sobre HTTPS con Bearer token OAuth 2.0</p>
+        <p><strong>Campos buscados:</strong> Depende de la logica interna del Codeunit AL (no controlamos desde fuera)</p>
+      </div>
+
+      <h3>2. Busqueda de Proveedores (OData REST)</h3>
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title"><span class="dot" style="background: var(--primary);"></span> OData v4 /Vendor</div>
+        <p>API REST estandar de BC que expone todos los campos de la tabla de Proveedores. Busca en 6 campos de telefono.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Campo en BC</th><th>Campo OData</th><th>Estrategia 1 (filtro directo)</th><th>Estrategia 2 (cache normalizada)</th></tr></thead>
+          <tbody>
+            <tr><td>N&ordm; telefono</td><td>PhoneNo</td><td><span class="status ok">Si</span></td><td><span class="status ok">Si</span></td></tr>
+            <tr><td>N&ordm; telefono 2</td><td>PhoneNo2</td><td><span class="status ok">Si</span></td><td><span class="status ok">Si</span></td></tr>
+            <tr><td>N&ordm; telefono 3</td><td>PhoneNo3</td><td><span class="status ok">Si</span></td><td><span class="status ok">Si</span></td></tr>
+            <tr><td>N&ordm; telefono 4</td><td>PhoneNo4</td><td><span class="status ok">Si</span></td><td><span class="status ok">Si</span></td></tr>
+            <tr><td>N&ordm; telefono 5</td><td>PhoneNo5</td><td><span class="status ok">Si</span></td><td><span class="status ok">Si</span></td></tr>
+            <tr><td>N.&ordm; telefono movil</td><td>MobilePhoneNo</td><td><span class="status ok">Si</span></td><td><span class="status ok">Si</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Estrategia de busqueda (2 pasos)</h3>
+      <div class="cards" style="margin-top: 12px;">
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--blue);"></span> Paso 1: Filtro OData directo</div>
+          <p>Consulta rapida con filtro <code>PhoneNo eq 'X' or PhoneNo2 eq 'X' or ... or MobilePhoneNo eq 'X'</code>. Funciona cuando el numero coincide exactamente.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--primary);"></span> Paso 2: Cache normalizada</div>
+          <p>Si el paso 1 falla, descarga todos los vendors con telefono (~994), los cachea 10 minutos, y compara <strong>normalizando</strong> (quitando espacios, guiones, parentesis, +). Cubre formatos inconsistentes.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 28px;">Ejemplo de normalizacion</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Telefono en BC</th><th>Llamada entrante</th><th>Paso 1 (exacto)</th><th>Paso 2 (normalizado)</th></tr></thead>
+          <tbody>
+            <tr><td>933795032</td><td>933795032</td><td><span class="status ok">Match</span></td><td>-</td></tr>
+            <tr><td>93 379 51 38</td><td>933795138</td><td><span class="status err">Falla</span></td><td><span class="status ok">Match</span></td></tr>
+            <tr><td>+34 667 601 605</td><td>667601605</td><td><span class="status err">Falla</span></td><td><span class="status ok">Match</span></td></tr>
+            <tr><td>667601605</td><td>667601605</td><td><span class="status ok">Match</span></td><td>-</td></tr>
+            <tr><td>(93) 379-50-91</td><td>933795091</td><td><span class="status err">Falla</span></td><td><span class="status ok">Match</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUANDO FUNCIONA -->
+  <section id="funciona">
+    <div class="container">
+      <h2><span class="icon">&#9989;</span> Cuando FUNCIONA</h2>
+      <p class="section-desc">Todos los escenarios donde el sistema identifica correctamente al llamante y abre su ficha.</p>
+
+      <ul class="works-list">
+        <li>
+          <strong>Contacto con telefono en BC:</strong>
+          El numero entrante coincide con un contacto buscado por el Codeunit SOAP ObtenerURL. Se abre la ficha del contacto directamente. (Screen pop verde)
+        </li>
+        <li>
+          <strong>Proveedor con telefono fijo (PhoneNo):</strong>
+          El numero coincide exactamente con el campo "N&ordm; telefono" de un vendor. Busqueda directa por OData filter. (Screen pop indigo)
+        </li>
+        <li>
+          <strong>Proveedor con movil (MobilePhoneNo):</strong>
+          El numero coincide con "N.&ordm; telefono movil" del vendor. Busqueda directa por OData filter. (Screen pop indigo)
+        </li>
+        <li>
+          <strong>Proveedor con telefonos 2-5:</strong>
+          Cualquier telefono secundario (PhoneNo2 a PhoneNo5) del vendor. Se busca en los 6 campos a la vez.
+        </li>
+        <li>
+          <strong>Telefonos con espacios/guiones en BC:</strong>
+          Si en BC el telefono es "93 379 51 38" y llaman del 933795138, el paso 2 (cache normalizada) lo detecta. Tambien maneja parentesis, +, y guiones.
+        </li>
+        <li>
+          <strong>Llamadas entre extensiones del mismo tenant:</strong>
+          Si la extension destino pertenece a un tenant configurado y el CallerIDNum tiene 7+ digitos, se procesa normalmente.
+        </li>
+        <li>
+          <strong>Multi-tenant:</strong>
+          Cada empresa tiene su propia configuracion BC. Si tenant 20242 tiene Vitogas y tenant 20141 tiene otra empresa, las busquedas van contra la BC correcta.
+        </li>
+        <li>
+          <strong>Numero no encontrado:</strong>
+          Si no esta ni en contactos ni en proveedores, se muestra screen pop naranja con opcion de crear contacto nuevo. La pagina de creacion se pre-rellena con el telefono.
+        </li>
+        <li>
+          <strong>Multiples llamadas simultaneas:</strong>
+          Cada llamada se cachea por channel unico en activeCalls. 10 llamadas simultaneas funcionan sin conflicto.
+        </li>
+        <li>
+          <strong>Reconexion AMI:</strong>
+          Si la conexion a Asterisk se cae, se reconecta automaticamente cada 5 segundos. Las llamadas durante la desconexion no se procesan pero se retoma al reconectar.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CUANDO NO FUNCIONA -->
+  <section id="no-funciona">
+    <div class="container">
+      <h2><span class="icon">&#10060;</span> Cuando NO Funciona</h2>
+      <p class="section-desc">Limitaciones conocidas y casos donde el sistema no puede identificar al llamante.</p>
+
+      <ul class="limit-list">
+        <li>
+          <strong>Numero en contacto vinculado pero no en ficha de proveedor:</strong>
+          Si el telefono esta en un registro de Contacto asociado al proveedor, pero NO en los campos PhoneNo/MobilePhoneNo de la ficha de Vendor directamente, la busqueda OData no lo encuentra. El SOAP puede encontrarlo si el Codeunit busca en Contactos.
+        </li>
+        <li>
+          <strong>Llamadas con CallerIDNum corto (&lt;7 digitos):</strong>
+          Extensiones internas, numeros cortos o CallerID anonimo se ignoran. Filtro en bcHooks: <code>if (callerNum.length &lt; 7) return;</code>
+        </li>
+        <li>
+          <strong>CallerID oculto / anonimo:</strong>
+          Si el PBX no envia CallerIDNum o envia "Anonymous", no hay numero para buscar.
+        </li>
+        <li>
+          <strong>Prefijo internacional +34 entrante:</strong>
+          Si el PBX envia "+34667601605" y en BC esta como "667601605", el paso 1 (exacto) falla. El paso 2 (normalizado) SI lo encuentra porque quita el "+". Pero si ambos tienen "+34", funciona directamente.
+        </li>
+        <li>
+          <strong>Proveedor recien creado/modificado (&lt;10 min):</strong>
+          La cache de vendors tiene TTL de 10 minutos. Un proveedor creado o con telefono cambiado puede no aparecer hasta que expire la cache.
+        </li>
+        <li>
+          <strong>Popups bloqueados por el navegador:</strong>
+          El auto-open de BC usa <code>window.open()</code>. Si el navegador bloquea popups, se muestra un banner pidiendo permiso. El popup de screen pop SI aparece, pero BC no se abre automaticamente.
+        </li>
+        <li>
+          <strong>Operador sin extension configurada:</strong>
+          Si el usuario no ha seleccionado empresa + extension en su panel, el servidor no sabe su sipPeer y no puede enviarle el screen pop.
+        </li>
+        <li>
+          <strong>Tenant BC deshabilitado o mal configurado:</strong>
+          Si la integracion BC esta desactivada (enabled=0) o faltan credenciales OAuth, no se procesa ninguna llamada de ese tenant.
+        </li>
+        <li>
+          <strong>Token OAuth expirado y renovacion falla:</strong>
+          Si Azure rechaza la renovacion (secret expirado, app eliminada), todas las busquedas fallan silenciosamente. El screen pop muestra "no encontrado" para todas las llamadas.
+        </li>
+        <li>
+          <strong>Llamada no contestada:</strong>
+          Si suena pero nadie contesta, no se envia screen pop (se envia solo en DialEnd con ANSWER). La pre-busqueda se ejecuta pero el resultado se descarta.
+        </li>
+        <li>
+          <strong>Extension destino no sigue patron ext{tenantId} o pd{tenantId}:</strong>
+          El sistema detecta el tenant por el nombre del SIP peer. Si el DestChannel no contiene "ext20242" o "pd20242", no se activa la busqueda.
+        </li>
+        <li>
+          <strong>Proveedores de otras companies de BC:</strong>
+          Solo busca en la company configurada para el tenant (ej: VITOGAS_2017). Si hay multiples companies en el mismo entorno BC, solo se busca en la configurada.
+        </li>
+        <li>
+          <strong>Servidor Node.js caido:</strong>
+          Si el servidor no esta corriendo, no hay conexion AMI, no hay procesamiento de llamadas ni SSE. Las llamadas entran normalmente en el PBX pero sin screen pop.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- COMPONENTES -->
+  <section id="componentes">
+    <div class="container">
+      <h2><span class="icon">&#128230;</span> Componentes del Sistema</h2>
+      <p class="section-desc">Archivos principales del backend y frontend.</p>
+
+      <h3>Backend (server/)</h3>
+      <div class="cards">
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--green);"></span> index.js</div>
+          <p>Entry point. Express, rutas API, sirve frontend compilado. Intercepta console.log para SSE broadcast.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--green);"></span> db.js</div>
+          <p>SQLite (better-sqlite3, WAL). Tablas: users, sessions, integrations_config, call_log. Prepared statements.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--blue);"></span> services/ami.js</div>
+          <p>Cliente TCP raw a Asterisk Manager Interface. Parser de eventos AMI, auto-reconnect cada 5s.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--blue);"></span> services/bc.js</div>
+          <p>Integracion BC: OAuth 2.0, SOAP (ObtenerURL, RegistrarLlamada), OData v4 (Vendor search en 6 campos).</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--blue);"></span> services/bcHooks.js</div>
+          <p>Escucha DialBegin/DialEnd/Hangup. Pre-busqueda contacto+vendor, envia screen pop SSE, registra llamada.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--blue);"></span> services/sse.js</div>
+          <p>Server-Sent Events manager. Gestiona clientes por sipPeer, heartbeat 30s, broadcast a admins.</p>
+        </div>
+      </div>
+
+      <h3>Frontend (client/src/)</h3>
+      <div class="cards">
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--primary);"></span> ScreenPop.vue</div>
+          <p>Popup flotante. 3 estados (contacto/proveedor/no encontrado). Auto-open BC, auto-dismiss.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--primary);"></span> UserPanelView.vue</div>
+          <p>Panel operador: selecciona empresa y extension, ve actividad de llamadas en tiempo real.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--primary);"></span> DashboardView.vue</div>
+          <p>Admin: terminal de logs en tiempo real (coloreados por tipo) + tabla de llamadas recientes.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--primary);"></span> SettingsView.vue</div>
+          <p>Admin: CRUD de configuraciones BC por tenant. Test connection, test screen pop.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--primary);"></span> UsersView.vue</div>
+          <p>Admin: CRUD usuarios (username, password, extension, sipPeer, tenant, role, activo).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API ENDPOINTS -->
+  <section id="api">
+    <div class="container">
+      <h2><span class="icon">&#128268;</span> API Endpoints</h2>
+      <p class="section-desc">Todos los endpoints REST del servidor.</p>
+
+      <h3>Autenticacion (/api/auth)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Metodo</th><th>Ruta</th><th>Auth</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status ok">POST</span></td><td>/api/auth/login</td><td>No</td><td>Login con username + password, devuelve JWT</td></tr>
+            <tr><td><span class="status err">POST</span></td><td>/api/auth/logout</td><td>Si</td><td>Destruye sesion</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/auth/me</td><td>Si</td><td>Datos del usuario autenticado</td></tr>
+            <tr><td><span class="status warn">PUT</span></td><td>/api/auth/me/extension</td><td>Si</td><td>Configura tenant_id + extension del operador</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/auth/tenants</td><td>Si</td><td>Lista tenants BC habilitados</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Business Central (/api/bc) &mdash; Solo Admin</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Metodo</th><th>Ruta</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status info">GET</span></td><td>/api/bc/tenants</td><td>IDs de tenants configurados</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/bc/config/:tenantId</td><td>Lee configuracion (secret redactado)</td></tr>
+            <tr><td><span class="status warn">PUT</span></td><td>/api/bc/config/:tenantId</td><td>Guarda configuracion</td></tr>
+            <tr><td><span class="status err">DELETE</span></td><td>/api/bc/config/:tenantId</td><td>Elimina configuracion</td></tr>
+            <tr><td><span class="status ok">POST</span></td><td>/api/bc/test/:tenantId</td><td>Valida OAuth + acceso WSDL</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/bc/test-url/:tenantId?phone=X</td><td>Prueba ObtenerURL (SOAP)</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/bc/calls</td><td>Historial de llamadas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Usuarios (/api/users) &mdash; Solo Admin</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Metodo</th><th>Ruta</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status info">GET</span></td><td>/api/users</td><td>Lista todos los usuarios</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/users/:id</td><td>Detalle usuario</td></tr>
+            <tr><td><span class="status ok">POST</span></td><td>/api/users</td><td>Crea usuario</td></tr>
+            <tr><td><span class="status warn">PUT</span></td><td>/api/users/:id</td><td>Actualiza usuario</td></tr>
+            <tr><td><span class="status err">DELETE</span></td><td>/api/users/:id</td><td>Elimina usuario</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>SSE (/api/events)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Metodo</th><th>Ruta</th><th>Auth</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status info">GET</span></td><td>/api/events?token=JWT</td><td>JWT en query</td><td>Stream SSE autenticado (panel admin/user)</td></tr>
+            <tr><td><span class="status info">GET</span></td><td>/api/events/operator?tenant=X&amp;ext=Y</td><td>No</td><td>Stream SSE para panel operador simplificado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEGURIDAD -->
+  <section id="seguridad">
+    <div class="container">
+      <h2><span class="icon">&#128274;</span> Seguridad y Cache</h2>
+      <p class="section-desc">Mecanismos de autenticacion, autorizacion y estrategias de cache.</p>
+
+      <h3>Autenticacion</h3>
+      <div class="cards">
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--green);"></span> JWT Tokens</div>
+          <p>Expiran en 24h. Secret configurable via JWT_SECRET en .env. Sesiones almacenadas en SQLite para invalidacion.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--green);"></span> Passwords bcrypt</div>
+          <p>Hash bcrypt con cost factor 10. Nunca almacenados en texto plano.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background: var(--orange);"></span> OAuth 2.0 BC</div>
+          <p>Client credentials flow contra Azure AD. Scope: api.businesscentral.dynamics.com/.default</p>
+        </div>
+      </div>
+
+      <h3>Cache</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dato</th><th>TTL</th><th>Invalidacion</th></tr></thead>
+          <tbody>
+            <tr><td>Token OAuth BC</td><td>~1h (expires_in - 5min)</td><td>Automatica al expirar o al guardar config</td></tr>
+            <tr><td>Mapa telefonos vendors</td><td>10 minutos</td><td>Automatica (siguiente busqueda recarga)</td></tr>
+            <tr><td>Configs BC habilitadas</td><td>30 segundos</td><td>Manual via reloadConfigs() al guardar</td></tr>
+            <tr><td>Config por tenant</td><td>Indefinido</td><td>Se limpia al guardar/eliminar config</td></tr>
+            <tr><td>Debounce busquedas</td><td>5 segundos</td><td>Automatica</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Roles</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Rol</th><th>Acceso</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status purple">admin</span></td><td>Dashboard, Settings BC, Usuarios, Logs en tiempo real, Screen pop</td></tr>
+            <tr><td><span class="status info">user</span></td><td>Panel operador (seleccionar empresa/extension), Screen pop, Actividad propia</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      PekePBX-BC &mdash; Documentacion del Sistema &mdash; Generado Marzo 2026
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PekePBX-BC - Operador</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif; background: #f1f5f9;
+      color: #1e293b; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: white; border-radius: 12px; width: 100%; max-width: 480px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+      font-weight: 600; font-size: 15px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-body { padding: 20px; }
+
+    /* --- Setup --- */
+    .setup-form { display: flex; flex-direction: column; gap: 14px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: #64748b; margin-bottom: 4px; text-transform: uppercase;
+    }
+    .form-group select, .form-group input {
+      width: 100%; padding: 10px 14px; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 14px; background: white;
+    }
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+    .btn-danger-ghost { background: none; color: #ef4444; border: 1px solid #fecaca; }
+
+    /* --- Status --- */
+    .status-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: 8px; font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .status-bar.ok { background: #f0fdf4; color: #166534; }
+    .status-bar.err { background: #fef2f2; color: #991b1b; }
+    .status-bar.wait { background: #fffbeb; color: #92400e; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot.ok { background: #22c55e; }
+    .dot.err { background: #ef4444; }
+    .dot.wait { background: #f59e0b; }
+
+    .session-info {
+      font-size: 13px; color: #64748b; text-align: center;
+      margin-bottom: 8px;
+    }
+
+    /* --- Call Banner --- */
+    .call-banner {
+      width: 100%; max-width: 480px; margin-bottom: 16px;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+      animation: bannerPulse 2s ease-in-out infinite;
+    }
+    .call-banner.hidden { display: none !important; }
+    .call-banner-inner {
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: white; padding: 16px 20px;
+    }
+    .call-banner-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .call-banner-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+      opacity: 0.8;
+    }
+    .call-banner-close {
+      background: rgba(255,255,255,0.2); border: none; color: white;
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      font-size: 14px; line-height: 1;
+    }
+    .call-banner-close:hover { background: rgba(255,255,255,0.3); }
+    .call-banner-name {
+      font-size: 18px; font-weight: 600; margin-bottom: 2px;
+    }
+    .call-banner-number {
+      font-size: 14px; opacity: 0.85; margin-bottom: 14px;
+    }
+    .call-banner-tag {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 4px; margin-left: 8px;
+    }
+    .call-banner-tag.found { background: #22c55e; color: #fff; }
+    .call-banner-tag.vendor { background: #6366f1; color: #fff; }
+    .call-banner-tag.notfound { background: #f59e0b; color: #fff; }
+    .call-banner-btn {
+      display: block; width: 100%; padding: 12px;
+      background: white; color: #1e40af; border: none;
+      border-radius: 8px; font-size: 15px; font-weight: 600;
+      cursor: pointer; text-align: center; text-decoration: none;
+    }
+    .call-banner-btn:hover { background: #f0f4ff; }
+    .call-banner-actions {
+      display: flex; gap: 8px;
+    }
+    .call-banner-actions a {
+      flex: 1; display: block; padding: 10px;
+      background: white; color: #1e40af; border: none;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-align: center; text-decoration: none;
+    }
+    .call-banner-actions a:hover { background: #f0f4ff; }
+
+    @keyframes bannerPulse {
+      0%, 100% { box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25); }
+      50% { box-shadow: 0 4px 24px rgba(37, 99, 235, 0.45); }
+    }
+
+    /* --- Events --- */
+    .event-list { max-height: 300px; overflow-y: auto; }
+    .event-item {
+      padding: 10px 14px; border-bottom: 1px solid #f1f5f9;
+      font-size: 13px; display: flex; gap: 10px; align-items: center;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-time { color: #94a3b8; font-family: monospace; white-space: nowrap; font-size: 12px; }
+    .event-info { color: #64748b; }
+    .event-open { color: #16a34a; font-weight: 500; }
+    .event-link {
+      color: #2563eb; text-decoration: none; font-size: 12px;
+      margin-left: auto; white-space: nowrap;
+    }
+    .event-link:hover { text-decoration: underline; }
+    .empty { text-align: center; padding: 30px; color: #94a3b8; font-size: 14px; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Setup card -->
+  <div class="card" id="setup-card">
+    <div class="card-header">PekePBX - Business Central</div>
+    <div class="card-body">
+      <div class="setup-form">
+        <div class="form-group">
+          <label>Empresa</label>
+          <select id="sel-tenant">
+            <option value="">Cargando empresas...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mi Extension</label>
+          <input type="text" id="inp-ext" placeholder="Ej: 10" maxlength="5"
+                 inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <button class="btn btn-primary" id="btn-start" disabled>Conectar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call banner -->
+  <div class="call-banner hidden" id="call-banner">
+    <div class="call-banner-inner">
+      <div class="call-banner-top">
+        <span class="call-banner-label">Llamada entrante</span>
+        <button class="call-banner-close" onclick="closeBanner()">&times;</button>
+      </div>
+      <div class="call-banner-name" id="banner-name"></div>
+      <div class="call-banner-number" id="banner-number"></div>
+      <div id="banner-actions"></div>
+    </div>
+  </div>
+
+  <!-- Connected card -->
+  <div class="card hidden" id="main-card">
+    <div class="card-header">
+      <span>PekePBX - Business Central</span>
+      <button class="btn btn-sm btn-danger-ghost" id="btn-disconnect">Cambiar</button>
+    </div>
+    <div class="card-body">
+      <div id="status" class="status-bar wait">
+        <span class="dot wait"></span>
+        <span>Conectando...</span>
+      </div>
+      <div class="session-info" id="session-info"></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="events-card">
+    <div class="card-header">Actividad</div>
+    <div class="card-body" style="padding:0;">
+      <div class="event-list" id="events">
+        <div class="empty">Esperando llamadas...</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = window.location.origin;
+const STORAGE_KEY = 'pekepbx-bc-operator';
+
+let es = null;
+let eventsStarted = false;
+let TENANT = null;
+let EXT = null;
+let reconnectDelay = 1000;
+const MAX_RECONNECT_DELAY = 30000;
+let bannerTimeout = null;
+
+const $setupCard = document.getElementById('setup-card');
+const $mainCard = document.getElementById('main-card');
+const $eventsCard = document.getElementById('events-card');
+const $selTenant = document.getElementById('sel-tenant');
+const $inpExt = document.getElementById('inp-ext');
+const $btnStart = document.getElementById('btn-start');
+const $btnDisconnect = document.getElementById('btn-disconnect');
+const $status = document.getElementById('status');
+const $sessionInfo = document.getElementById('session-info');
+const $events = document.getElementById('events');
+const $callBanner = document.getElementById('call-banner');
+const $bannerName = document.getElementById('banner-name');
+const $bannerNumber = document.getElementById('banner-number');
+const $bannerActions = document.getElementById('banner-actions');
+
+// Load active tenants
+async function loadTenantOptions() {
+  try {
+    const resp = await fetch(`${API}/api/tenants`);
+    const list = await resp.json();
+
+    if (list.length === 0) {
+      $selTenant.innerHTML = '<option value="">No hay empresas activas</option>';
+      return;
+    }
+
+    $selTenant.innerHTML = '<option value="">-- Selecciona empresa --</option>'
+      + list.map(t => `<option value="${esc(t.tenantId)}">${esc(t.name)} (${esc(t.tenantId)})</option>`).join('');
+    $btnStart.disabled = false;
+  } catch {
+    $selTenant.innerHTML = '<option value="">Error conectando al servidor</option>';
+  }
+}
+
+function saveConfig(tenantId, ext) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ tenantId, ext }));
+}
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+}
+
+function clearConfig() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function showSetup() {
+  if (es) { es.close(); es = null; }
+  $setupCard.classList.remove('hidden');
+  $mainCard.classList.add('hidden');
+  $eventsCard.classList.add('hidden');
+  $callBanner.classList.add('hidden');
+  eventsStarted = false;
+  reconnectDelay = 1000;
+  document.title = 'PekePBX-BC - Operador';
+  loadTenantOptions();
+}
+
+function showConnected(tenantId, tenantName, ext) {
+  TENANT = tenantId;
+  EXT = ext;
+  $setupCard.classList.add('hidden');
+  $mainCard.classList.remove('hidden');
+  $eventsCard.classList.remove('hidden');
+  $sessionInfo.textContent = `${tenantName} | Extension ${ext}`;
+  document.title = `Ext ${ext} - ${tenantName}`;
+  $events.innerHTML = '<div class="empty">Esperando llamadas...</div>';
+  eventsStarted = false;
+  reconnectDelay = 1000;
+  connect();
+}
+
+$btnStart.addEventListener('click', () => {
+  const tenantId = $selTenant.value;
+  const ext = $inpExt.value.trim();
+  if (!tenantId) { alert('Selecciona una empresa'); return; }
+  if (!ext) { alert('Ingresa tu extension'); return; }
+
+  const tenantName = $selTenant.options[$selTenant.selectedIndex].text;
+  saveConfig(tenantId, ext);
+  showConnected(tenantId, tenantName, ext);
+});
+
+$inpExt.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $btnStart.click();
+});
+
+$btnDisconnect.addEventListener('click', () => {
+  clearConfig();
+  showSetup();
+});
+
+// --- Call Banner ---
+function showCallBanner(data) {
+  const phone = data.phone;
+  const type = data.type; // 'contact' | 'vendor' | null
+
+  if (type === 'vendor') {
+    const name = data.name || phone;
+    $bannerName.innerHTML = esc(name) + '<span class="call-banner-tag vendor">Proveedor</span>';
+    $bannerNumber.textContent = phone;
+    $bannerActions.innerHTML = `<a class="call-banner-btn" href="${esc(data.bcUrl)}" target="_blank">Abrir ficha proveedor</a>`;
+  } else if (data.found) {
+    $bannerName.innerHTML = esc(phone) + '<span class="call-banner-tag found">Contacto</span>';
+    $bannerNumber.textContent = 'Contacto encontrado en Business Central';
+    $bannerActions.innerHTML = `<a class="call-banner-btn" href="${esc(data.bcUrl)}" target="_blank">Abrir ficha en BC</a>`;
+  } else {
+    $bannerName.innerHTML = esc(phone) + '<span class="call-banner-tag notfound">Nuevo</span>';
+    $bannerNumber.textContent = 'Contacto no encontrado en Business Central';
+    $bannerActions.innerHTML = `<div class="call-banner-actions">
+      <a href="${esc(data.newContactUrl || data.bcUrl)}" target="_blank">Crear contacto</a>
+      <a href="${esc(data.bcUrl)}" target="_blank">Abrir BC</a>
+    </div>`;
+  }
+
+  $callBanner.classList.remove('hidden');
+  playBeep();
+  showDesktopNotification(phone, data.found ? 'Contacto encontrado' : 'Contacto nuevo');
+
+  if (bannerTimeout) clearTimeout(bannerTimeout);
+  bannerTimeout = setTimeout(closeBanner, 60000);
+}
+
+function closeBanner() {
+  $callBanner.classList.add('hidden');
+  if (bannerTimeout) { clearTimeout(bannerTimeout); bannerTimeout = null; }
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; osc.type = 'sine'; gain.gain.value = 0.3;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch {}
+}
+
+function showDesktopNotification(phone, subtitle, url) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const n = new Notification('Llamada entrante', {
+      body: `${phone} - ${subtitle}`,
+      requireInteraction: true,
+    });
+    n.onclick = () => {
+      window.focus();
+      if (url) window.open(url, '_blank');
+      n.close();
+    };
+  }
+}
+
+// --- SSE Connection ---
+function connect() {
+  if (es) { es.close(); es = null; }
+  setStatus('wait', 'Conectando...');
+
+  es = new EventSource(`${API}/api/events/operator?tenant=${TENANT}&ext=${EXT}`);
+
+  es.addEventListener('connected', () => {
+    setStatus('ok', `Conectado - Extension ${EXT}`);
+    addEvent('info', 'Conectado al servidor');
+    reconnectDelay = 1000;
+  });
+
+  es.addEventListener('bc_screen_pop', (e) => {
+    const data = JSON.parse(e.data);
+    const type = data.type; // 'contact' | 'vendor' | null
+
+    let label, subtitle;
+    if (type === 'vendor') {
+      label = `Proveedor encontrado: ${data.name || data.phone}`;
+      subtitle = 'Proveedor encontrado';
+    } else if (data.found) {
+      label = `Contacto encontrado: ${data.phone}`;
+      subtitle = 'Contacto encontrado';
+    } else {
+      label = `Llamada entrante: ${data.phone}`;
+      subtitle = 'Contacto nuevo';
+    }
+
+    // Always open BC directly (ficha if found, new contact page if not)
+    const url = data.found ? data.bcUrl : (data.newContactUrl || data.bcUrl);
+    window.open(url, '_blank');
+
+    showCallBanner(data);
+    playBeep();
+    showDesktopNotification(data.phone, subtitle, url);
+
+    addEvent('open', label, data.bcUrl);
+  });
+
+  es.onerror = () => {
+    setStatus('err', 'Desconectado - Reintentando...');
+    es.close(); es = null;
+    setTimeout(connect, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+  };
+}
+
+function setStatus(type, msg) {
+  $status.className = `status-bar ${type}`;
+  $status.innerHTML = `<span class="dot ${type}"></span><span>${esc(msg)}</span>`;
+}
+
+function addEvent(type, msg, url) {
+  if (!eventsStarted) { $events.innerHTML = ''; eventsStarted = true; }
+  const time = new Date().toLocaleTimeString('es-ES', { hour12: false });
+  const div = document.createElement('div');
+  div.className = 'event-item';
+  const linkHtml = url ? `<a class="event-link" href="${esc(url)}" target="_blank">Abrir BC</a>` : '';
+  div.innerHTML = `<span class="event-time">${time}</span><span class="event-${type}">${esc(msg)}</span>${linkHtml}`;
+  $events.prepend(div);
+  while ($events.children.length > 50) $events.removeChild($events.lastChild);
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// Notifications permission
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Auto-connect if saved config
+const saved = loadConfig();
+if (saved && saved.tenantId && saved.ext) {
+  fetch(`${API}/api/tenants`).then(r => r.json()).then(list => {
+    const t = list.find(x => x.tenantId === saved.tenantId);
+    if (t) {
+      showConnected(t.tenantId, `${t.name} (${t.tenantId})`, saved.ext);
+    } else {
+      clearConfig();
+      showSetup();
+    }
+  }).catch(() => showSetup());
+} else {
+  showSetup();
+}
+</script>
+
+</body>
+</html>

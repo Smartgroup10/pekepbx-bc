@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PekePBX-BC - Documentacion Tecnica</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1f36 0%, #2d3561 100%);
+      color: white;
+      padding: 50px 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.85;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header .badges {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .header .badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 35px 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      color: #1a1f36;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e8eaf0;
+    }
+
+    .section h3 {
+      font-size: 1.15rem;
+      color: #2d3561;
+      margin: 25px 0 12px 0;
+    }
+
+    .section h4 {
+      font-size: 1rem;
+      color: #4a5568;
+      margin: 20px 0 8px 0;
+    }
+
+    p, li { font-size: 0.95rem; color: #4a5568; }
+    p { margin-bottom: 12px; }
+    ul, ol { margin: 10px 0 15px 24px; }
+    li { margin-bottom: 6px; }
+    strong { color: #1a1a2e; }
+
+    /* Architecture diagram */
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 0;
+      align-items: center;
+      margin: 30px 0;
+    }
+
+    .arch-box {
+      background: #f7f8fc;
+      border: 2px solid #d1d5e0;
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .arch-box.centralita { border-color: #e67e22; background: #fdf2e9; }
+    .arch-box.server { border-color: #3498db; background: #eaf2f8; }
+    .arch-box.bc { border-color: #27ae60; background: #eafaf1; }
+
+    .arch-box .icon { font-size: 2.2rem; margin-bottom: 8px; }
+    .arch-box .title { font-weight: 700; font-size: 1rem; color: #1a1a2e; }
+    .arch-box .subtitle { font-size: 0.8rem; color: #7f8c8d; margin-top: 4px; }
+
+    .arch-arrow {
+      text-align: center;
+      padding: 0 8px;
+      color: #7f8c8d;
+      font-size: 0.78rem;
+      line-height: 1.3;
+    }
+
+    .arch-arrow .arrow-line {
+      font-size: 1.6rem;
+      letter-spacing: -2px;
+      color: #bdc3c7;
+    }
+
+    .arch-arrow .protocol {
+      font-weight: 600;
+      color: #5b6c8a;
+    }
+
+    /* SSE row below */
+    .arch-bottom {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .arch-bottom .arch-box { padding: 16px; }
+    .arch-bottom .arch-box .icon { font-size: 1.6rem; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #f7f8fc;
+      color: #1a1f36;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid #e8eaf0;
+    }
+
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f0f1f5;
+      color: #4a5568;
+    }
+
+    tr:hover td { background: #fafbfd; }
+
+    /* Code blocks */
+    .code-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 15px 0;
+      overflow-x: auto;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .code-block .comment { color: #6c7086; }
+    .code-block .tag { color: #89b4fa; }
+    .code-block .value { color: #a6e3a1; }
+    .code-block .keyword { color: #cba6f7; }
+    .code-block .label { color: #f9e2af; }
+
+    code {
+      background: #f0f1f5;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.88em;
+      color: #c0392b;
+    }
+
+    /* Flow diagram */
+    .flow {
+      margin: 25px 0;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 0;
+      position: relative;
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 23px;
+      top: 48px;
+      width: 2px;
+      height: calc(100% - 28px);
+      background: #d1d5e0;
+    }
+
+    .flow-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .flow-number.step1 { background: #e67e22; }
+    .flow-number.step2 { background: #3498db; }
+    .flow-number.step3 { background: #27ae60; }
+
+    .flow-content {
+      background: #f7f8fc;
+      border-radius: 10px;
+      padding: 18px 24px;
+      flex: 1;
+      margin-bottom: 20px;
+      border-left: 3px solid #d1d5e0;
+    }
+
+    .flow-content.step1 { border-left-color: #e67e22; }
+    .flow-content.step2 { border-left-color: #3498db; }
+    .flow-content.step3 { border-left-color: #27ae60; }
+
+    .flow-content h4 {
+      margin: 0 0 6px 0;
+      color: #1a1a2e;
+      font-size: 1rem;
+    }
+
+    .flow-content p { margin-bottom: 6px; font-size: 0.9rem; }
+
+    .flow-content .systems {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .flow-content .sys-tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .sys-tag.ami { background: #fdf2e9; color: #e67e22; }
+    .sys-tag.bc { background: #eafaf1; color: #27ae60; }
+    .sys-tag.sse { background: #eaf2f8; color: #3498db; }
+
+    /* Screen pop mockup */
+    .screenpop-demo {
+      display: flex;
+      gap: 24px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .screenpop-card {
+      flex: 1;
+      min-width: 260px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border: 1px solid #e0e0e0;
+    }
+
+    .screenpop-card .sp-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .screenpop-card .sp-header.found { background: #eafaf1; color: #27ae60; border-bottom: 1px solid #d5f5e3; }
+    .screenpop-card .sp-header.notfound { background: #fdf2e9; color: #e67e22; border-bottom: 1px solid #fdebd0; }
+
+    .screenpop-card .sp-body {
+      padding: 16px;
+      background: white;
+    }
+
+    .screenpop-card .sp-phone {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .screenpop-card .sp-desc {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      margin-bottom: 12px;
+    }
+
+    .screenpop-card .sp-btn {
+      display: inline-block;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: white;
+      text-decoration: none;
+    }
+
+    .sp-btn.blue { background: #3498db; }
+    .sp-btn.green { background: #27ae60; }
+
+    /* Info boxes */
+    .info-box {
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 15px 0;
+      font-size: 0.9rem;
+    }
+
+    .info-box.note { background: #eaf2f8; border-left: 4px solid #3498db; }
+    .info-box.warning { background: #fdf2e9; border-left: 4px solid #e67e22; }
+
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #95a5a6;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 700px) {
+      .architecture { grid-template-columns: 1fr; gap: 10px; }
+      .arch-arrow { transform: rotate(90deg); padding: 5px 0; }
+      .header { padding: 30px 20px; }
+      .header h1 { font-size: 1.6rem; }
+      .section { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>PekePBX-BC</h1>
+    <p>Integracion de la centralita telefonica PekePBX con Microsoft Dynamics 365 Business Central para screen pop automatico y registro de llamadas</p>
+    <div class="badges">
+      <span class="badge">Node.js + Express</span>
+      <span class="badge">Asterisk AMI</span>
+      <span class="badge">OAuth 2.0 + SOAP</span>
+      <span class="badge">Vue 3</span>
+      <span class="badge">SSE (Tiempo Real)</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- DESCRIPCION GENERAL -->
+    <div class="section">
+      <h2>Descripcion General</h2>
+      <p>PekePBX-BC es un sistema middleware que conecta la centralita telefonica <strong>PekePBX</strong> (basada en Asterisk) con <strong>Microsoft Dynamics 365 Business Central</strong>.</p>
+      <p>Sus dos funciones principales son:</p>
+      <ol>
+        <li><strong>Screen Pop:</strong> Cuando un operador recibe una llamada, el sistema busca automaticamente el contacto en Business Central por numero de telefono. Al contestar, se abre la ficha del contacto en el navegador del operador. Si el numero no existe, se abre la pagina de creacion de contacto con el telefono pre-rellenado.</li>
+        <li><strong>Registro de llamadas:</strong> Al finalizar una llamada contestada, el sistema registra automaticamente la llamada en Business Central (extension, telefono, fecha/hora) asociandola al contacto correspondiente.</li>
+      </ol>
+    </div>
+
+    <!-- ARQUITECTURA -->
+    <div class="section">
+      <h2>Arquitectura del Sistema</h2>
+      <p>El sistema se compone de tres piezas conectadas entre si:</p>
+
+      <div class="architecture">
+        <!-- Centralita -->
+        <div class="arch-box centralita">
+          <div class="icon">&#128222;</div>
+          <div class="title">PekePBX</div>
+          <div class="subtitle">Asterisk / Kamailio</div>
+          <div class="subtitle">Centralita telefonica</div>
+        </div>
+
+        <!-- Arrow 1 -->
+        <div class="arch-arrow">
+          <div class="arrow-line">&larr;&mdash;&mdash;&rarr;</div>
+          <div class="protocol">AMI (TCP)</div>
+          <div>Puerto 5100</div>
+          <div>Eventos en tiempo real</div>
+        </div>
+
+        <!-- Server -->
+        <div class="arch-box server">
+          <div class="icon">&#9881;</div>
+          <div class="title">PekePBX-BC</div>
+          <div class="subtitle">Node.js / Express</div>
+          <div class="subtitle">Servidor de integracion</div>
+        </div>
+
+        <!-- Arrow 2 -->
+        <div class="arch-arrow">
+          <div class="arrow-line">&mdash;&mdash;&rarr;</div>
+          <div class="protocol">OAuth 2.0 + SOAP</div>
+          <div>HTTPS</div>
+          <div>API Cloud</div>
+        </div>
+
+        <!-- Business Central -->
+        <div class="arch-box bc">
+          <div class="icon">&#127970;</div>
+          <div class="title">Business Central</div>
+          <div class="subtitle">Microsoft Dynamics 365</div>
+          <div class="subtitle">CRM en la nube</div>
+        </div>
+      </div>
+
+      <!-- Browser row -->
+      <div class="arch-bottom">
+        <div class="arch-arrow" style="writing-mode: initial;">
+          <div class="protocol">SSE</div>
+          <div>Tiempo real</div>
+        </div>
+        <div class="arch-box" style="border-color: #8e44ad; background: #f5eef8;">
+          <div class="icon">&#128187;</div>
+          <div class="title">Navegador del Operador</div>
+          <div class="subtitle">Panel Web con Screen Pop</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONEXION CENTRALITA -->
+    <div class="section">
+      <h2>Conexion con la Centralita (PekePBX)</h2>
+
+      <h3>Protocolo: AMI (Asterisk Manager Interface)</h3>
+      <p>La aplicacion se conecta a la centralita mediante <strong>AMI</strong>, un protocolo TCP nativo de Asterisk que permite recibir eventos de llamadas en tiempo real.</p>
+      <ul>
+        <li><strong>Conexion:</strong> Socket TCP directo al servidor Asterisk (puerto 5100)</li>
+        <li><strong>Autenticacion:</strong> Usuario y contrasena AMI configurados en variables de entorno</li>
+        <li><strong>Reconexion automatica:</strong> Si se pierde la conexion, reintenta cada 5 segundos</li>
+      </ul>
+
+      <h3>Eventos que escucha</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Evento AMI</th>
+            <th>Cuando ocurre</th>
+            <th>Que hace la aplicacion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DialBegin</strong></td>
+            <td>La llamada empieza a sonar en el telefono del operador</td>
+            <td>Extrae el numero del llamante y la extension destino. Lanza una <strong>busqueda anticipada</strong> en Business Central mientras el telefono sigue sonando</td>
+          </tr>
+          <tr>
+            <td><strong>DialEnd</strong></td>
+            <td>El operador contesta (o no) la llamada</td>
+            <td>Si contesto (ANSWER), envia una notificacion al navegador del operador con el resultado de la busqueda en BC (<strong>Screen Pop</strong>)</td>
+          </tr>
+          <tr>
+            <td><strong>Hangup</strong></td>
+            <td>La llamada finaliza (cuelgan)</td>
+            <td>Si la llamada fue contestada, <strong>registra la llamada</strong> en Business Central via SOAP</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Identificacion del operador</h3>
+      <p>Cada extension de la centralita tiene un SIP peer con formato <code>ext{tenantId}{extension}</code>. Por ejemplo:</p>
+      <ul>
+        <li><code>ext2014101</code> = Tenant 20141, extension 01</li>
+        <li><code>ext2014115</code> = Tenant 20141, extension 15</li>
+      </ul>
+      <p>La aplicacion usa este patron para:</p>
+      <ol>
+        <li>Saber a que tenant de Business Central pertenece la llamada</li>
+        <li>Enviar la notificacion (screen pop) al operador correcto</li>
+      </ol>
+    </div>
+
+    <!-- CONEXION BUSINESS CENTRAL -->
+    <div class="section">
+      <h2>Conexion con Business Central</h2>
+
+      <h3>Autenticacion: OAuth 2.0 (Client Credentials)</h3>
+      <p>La aplicacion se autentica contra Azure AD usando credenciales de aplicacion (maquina a maquina, sin intervencion de usuario):</p>
+
+      <div class="code-block">
+        <span class="keyword">POST</span> https://login.microsoftonline.com/<span class="value">{azure_tenant_id}</span>/oauth2/v2.0/token<br><br>
+        <span class="label">client_id</span>      = <span class="value">ID de la aplicacion registrada en Azure</span><br>
+        <span class="label">client_secret</span>  = <span class="value">Clave secreta de la aplicacion</span><br>
+        <span class="label">scope</span>          = <span class="value">https://api.businesscentral.dynamics.com/.default</span><br>
+        <span class="label">grant_type</span>     = <span class="value">client_credentials</span>
+      </div>
+
+      <p>El token obtenido se cachea en memoria y se renueva automaticamente antes de que expire.</p>
+
+      <h3>Servicio Web SOAP: WSRegistroLlamadas</h3>
+      <p>Business Central expone un <strong>Codeunit personalizado</strong> llamado <strong>WSRegistroLlamadas</strong> con dos metodos:</p>
+
+      <h4>1. ObtenerURL &mdash; Busqueda de contacto</h4>
+      <p>Se invoca <strong>mientras el telefono suena</strong> (antes de que el operador conteste).</p>
+      <ul>
+        <li><strong>Entrada:</strong> Numero de telefono del llamante</li>
+        <li><strong>Salida:</strong> URL de la ficha del contacto en BC, o vacio si no existe</li>
+      </ul>
+
+      <div class="code-block">
+        <span class="comment">&lt;!-- Peticion SOAP --&gt;</span><br>
+        <span class="tag">&lt;ObtenerURL&gt;</span><br>
+        &nbsp;&nbsp;<span class="tag">&lt;codTelefono&gt;</span><span class="value">912345678</span><span class="tag">&lt;/codTelefono&gt;</span><br>
+        <span class="tag">&lt;/ObtenerURL&gt;</span><br><br>
+        <span class="comment">&lt;!-- Respuesta --&gt;</span><br>
+        <span class="tag">&lt;return_value&gt;</span><span class="value">https://businesscentral.dynamics.com/.../page/5050?...</span><span class="tag">&lt;/return_value&gt;</span>
+      </div>
+
+      <h4>2. RegistrarLlamada &mdash; Registro de llamada</h4>
+      <p>Se invoca <strong>al colgar</strong>, solo si la llamada fue contestada.</p>
+      <ul>
+        <li><strong>Entrada:</strong> Extension del operador + numero de telefono</li>
+        <li><strong>Salida:</strong> true/false (registrada correctamente o no)</li>
+      </ul>
+
+      <div class="code-block">
+        <span class="comment">&lt;!-- Peticion SOAP --&gt;</span><br>
+        <span class="tag">&lt;RegistrarLlamada&gt;</span><br>
+        &nbsp;&nbsp;<span class="tag">&lt;xMLRegistroLlamadas&gt;</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;Registro&gt;</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;Extension&gt;</span><span class="value">01</span><span class="tag">&lt;/Extension&gt;</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;Telefono&gt;</span><span class="value">912345678</span><span class="tag">&lt;/Telefono&gt;</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;/Registro&gt;</span><br>
+        &nbsp;&nbsp;<span class="tag">&lt;/xMLRegistroLlamadas&gt;</span><br>
+        <span class="tag">&lt;/RegistrarLlamada&gt;</span><br><br>
+        <span class="comment">&lt;!-- Respuesta --&gt;</span><br>
+        <span class="tag">&lt;return_value&gt;</span><span class="value">true</span><span class="tag">&lt;/return_value&gt;</span>
+      </div>
+
+      <h3>URL del servicio web</h3>
+      <div class="code-block">
+        https://api.businesscentral.dynamics.com/v2.0/<span class="value">{azure_tenant_id}</span>/<span class="value">{environment}</span>/WS/<span class="value">{company}</span>/Codeunit/WSRegistroLlamadas
+      </div>
+    </div>
+
+    <!-- FLUJO COMPLETO -->
+    <div class="section">
+      <h2>Flujo Completo de una Llamada</h2>
+
+      <div class="flow">
+        <!-- Step 1 -->
+        <div class="flow-step">
+          <div class="flow-number step1">1</div>
+          <div class="flow-content step1">
+            <h4>Suena el telefono del operador</h4>
+            <p>La centralita emite un evento <strong>DialBegin</strong> via AMI. La aplicacion extrae el numero del llamante, la extension destino y el tenant.</p>
+            <p>Inmediatamente lanza una <strong>busqueda anticipada</strong> en Business Central llamando a <code>ObtenerURL(telefono)</code> mientras el telefono sigue sonando. El resultado se guarda en memoria esperando a que contesten.</p>
+            <div class="systems">
+              <span class="sys-tag ami">AMI: DialBegin</span>
+              <span class="sys-tag bc">BC: ObtenerURL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flow-step">
+          <div class="flow-number step2">2</div>
+          <div class="flow-content step2">
+            <h4>El operador contesta la llamada</h4>
+            <p>La centralita emite <strong>DialEnd</strong> con estado ANSWER. La aplicacion envia una notificacion en tiempo real (SSE) al navegador del operador.</p>
+            <p><strong>Si el contacto existe:</strong> se abre automaticamente la ficha en Business Central.<br>
+               <strong>Si NO existe:</strong> se abre automaticamente la pagina de creacion de contacto con el telefono pre-rellenado.</p>
+            <div class="systems">
+              <span class="sys-tag ami">AMI: DialEnd</span>
+              <span class="sys-tag sse">SSE: Screen Pop</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flow-step">
+          <div class="flow-number step3">3</div>
+          <div class="flow-content step3">
+            <h4>Cuelgan la llamada</h4>
+            <p>La centralita emite <strong>Hangup</strong>. Si la llamada fue contestada, la aplicacion llama a <code>RegistrarLlamada(extension, telefono)</code> para registrarla automaticamente en el historial del contacto en Business Central.</p>
+            <p>La llamada tambien queda registrada en la base de datos local para el historial del panel de administracion.</p>
+            <div class="systems">
+              <span class="sys-tag ami">AMI: Hangup</span>
+              <span class="sys-tag bc">BC: RegistrarLlamada</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN POP -->
+    <div class="section">
+      <h2>Screen Pop (Notificacion al Operador)</h2>
+      <p>El screen pop es una notificacion que aparece en el navegador del operador cuando contesta una llamada. Se envia mediante <strong>Server-Sent Events (SSE)</strong>, una tecnologia que permite al servidor enviar datos al navegador en tiempo real sin que el navegador tenga que preguntar.</p>
+
+      <div class="info-box note">
+        <strong>Importante:</strong> La notificacion se envia <strong>unicamente al operador que contesto la llamada</strong>, identificado por su SIP peer. Los administradores del mismo tenant tambien la reciben para monitorizacion.
+      </div>
+
+      <h3>Ejemplo visual</h3>
+      <div class="screenpop-demo">
+        <!-- Found -->
+        <div class="screenpop-card">
+          <div class="sp-header found">
+            &#128222; Contacto encontrado
+          </div>
+          <div class="sp-body">
+            <div class="sp-phone">+34 912 345 678</div>
+            <div class="sp-desc">Se abrira la ficha en Business Central</div>
+            <span class="sp-btn blue">&#xf17a; Abrir ficha</span>
+          </div>
+        </div>
+
+        <!-- Not found -->
+        <div class="screenpop-card">
+          <div class="sp-header notfound">
+            &#128222; Contacto no encontrado
+          </div>
+          <div class="sp-body">
+            <div class="sp-phone">+34 666 777 888</div>
+            <div class="sp-desc">Este numero no esta registrado en Business Central</div>
+            <span class="sp-btn green">&#128100; Crear contacto en BC</span>
+          </div>
+        </div>
+      </div>
+
+      <p>En ambos casos, Business Central se abre <strong>automaticamente</strong> en el navegador del operador al contestar la llamada.</p>
+    </div>
+
+    <!-- CONFIGURACION -->
+    <div class="section">
+      <h2>Configuracion Necesaria</h2>
+
+      <h3>Datos de Business Central (por tenant)</h3>
+      <table>
+        <thead>
+          <tr><th>Campo</th><th>Descripcion</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Client ID</strong></td><td>ID de la aplicacion registrada en Azure AD</td><td><code>b75e6ab5-b637-47df-...</code></td></tr>
+          <tr><td><strong>Client Secret</strong></td><td>Clave secreta de la aplicacion (valor, no el ID del secreto)</td><td><code>Nu~8Q~ed9kia...</code></td></tr>
+          <tr><td><strong>Azure Tenant ID</strong></td><td>ID del tenant de Azure AD</td><td><code>ee91818c-c2e2-...</code></td></tr>
+          <tr><td><strong>Environment</strong></td><td>Entorno de Business Central</td><td><code>Production</code></td></tr>
+          <tr><td><strong>Company</strong></td><td>Nombre de la empresa en BC</td><td><code>VITOGAS_2017</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Datos de la Centralita</h3>
+      <table>
+        <thead>
+          <tr><th>Campo</th><th>Descripcion</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>AMI Host</strong></td><td>IP del servidor Asterisk</td><td><code>62.210.62.5</code></td></tr>
+          <tr><td><strong>AMI Port</strong></td><td>Puerto del protocolo AMI</td><td><code>5100</code></td></tr>
+          <tr><td><strong>AMI User</strong></td><td>Usuario AMI</td><td><code>webrtcc</code></td></tr>
+          <tr><td><strong>AMI Password</strong></td><td>Contrasena AMI</td><td><em>(configurado en .env)</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- REQUISITOS BC -->
+    <div class="section">
+      <h2>Requisitos en Business Central</h2>
+      <ol>
+        <li><strong>Aplicacion registrada en Azure AD</strong> con permisos para acceder a la API de Business Central (scope <code>.default</code>)</li>
+        <li><strong>Codeunit WSRegistroLlamadas</strong> publicado como servicio web con los metodos:
+          <ul>
+            <li><code>ObtenerURL(codTelefono)</code> &rarr; Devuelve URL de la ficha del contacto</li>
+            <li><code>RegistrarLlamada(Extension, Telefono)</code> &rarr; Registra la llamada en el historial</li>
+          </ul>
+        </li>
+        <li><strong>Contactos con telefonos cargados</strong> en Business Central para que la busqueda ObtenerURL devuelva resultados</li>
+      </ol>
+
+      <div class="info-box warning">
+        <strong>Nota:</strong> Si un contacto no tiene telefono cargado en BC, la busqueda no lo encontrara y el sistema ofrecera crear uno nuevo. Es importante mantener los telefonos actualizados en las fichas de contacto.
+      </div>
+    </div>
+
+    <!-- PANEL ADMIN -->
+    <div class="section">
+      <h2>Panel de Administracion</h2>
+      <p>La aplicacion incluye un panel web con las siguientes secciones:</p>
+
+      <table>
+        <thead>
+          <tr><th>Seccion</th><th>Acceso</th><th>Descripcion</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Dashboard</strong></td>
+            <td>Admin</td>
+            <td>Logs del servidor en tiempo real, historial de llamadas recientes con estado (encontrado, contestada, registrada)</td>
+          </tr>
+          <tr>
+            <td><strong>Configuracion BC</strong></td>
+            <td>Admin</td>
+            <td>Gestion de credenciales por tenant, test de conexion OAuth + SOAP, test de busqueda por telefono</td>
+          </tr>
+          <tr>
+            <td><strong>Usuarios</strong></td>
+            <td>Admin</td>
+            <td>Alta, baja y modificacion de operadores. Asignacion de extension, tenant y rol</td>
+          </tr>
+          <tr>
+            <td><strong>Panel Operador</strong></td>
+            <td>Usuario</td>
+            <td>Vista simplificada para operadores: seleccion de extension, registro de actividad y screen pop integrado</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    PekePBX-BC &mdash; SmartGroup &mdash; Documentacion Tecnica
+  </div>
+
+</body>
+</html>
