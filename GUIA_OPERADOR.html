@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Guía de Usuario — PekePBX Business Central</title>
+<style>
+  @page { margin: 2cm; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
+  h1 { color: #1e40af; font-size: 28px; border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 30px; }
+  h2 { color: #1e40af; font-size: 20px; margin-top: 35px; margin-bottom: 15px; border-left: 4px solid #2563eb; padding-left: 12px; }
+  h3 { color: #334155; font-size: 16px; margin-top: 20px; }
+  .step { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin: 14px 0; }
+  .step-number { display: inline-block; background: #2563eb; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 700; font-size: 14px; margin-right: 10px; }
+  .tip { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 14px; }
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 14px; }
+  .tag { display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  img { max-width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; margin: 10px 0; }
+  .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+  th { background: #f1f5f9; text-align: left; padding: 10px 14px; font-size: 13px; color: #475569; border-bottom: 2px solid #e2e8f0; }
+  td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h1>PekePBX — Business Central<br><span style="font-size:16px; color:#64748b; font-weight:400;">Guía de Usuario para Operadores</span></h1>
+
+<h2>1. ¿Qué es PekePBX-BC?</h2>
+<p>PekePBX-BC es una herramienta que conecta tu extensión telefónica con Microsoft Dynamics 365 Business Central. Cuando recibes una llamada, el sistema busca automáticamente el contacto en Business Central y te abre su ficha para que puedas atenderle con toda la información disponible.</p>
+
+<h2>2. Acceso al Panel de Operador</h2>
+
+<h3>Opción A — Panel público (sin login)</h3>
+<div class="step">
+  <span class="step-number">1</span> Abre tu navegador (Chrome o Edge recomendado)
+</div>
+<div class="step">
+  <span class="step-number">2</span> Accede a: <code>http://[IP-del-servidor]:4500/operador</code>
+</div>
+<div class="step">
+  <span class="step-number">3</span> Selecciona tu <strong>empresa</strong> (tenant) en el desplegable
+</div>
+<div class="step">
+  <span class="step-number">4</span> Introduce tu número de <strong>extensión</strong> (ej: 125)
+</div>
+<div class="step">
+  <span class="step-number">5</span> Pulsa <strong>Conectar</strong>
+</div>
+
+<div class="tip">
+  <strong>Consejo:</strong> Guarda la URL como marcador en tu navegador para acceder rápidamente cada día.
+</div>
+
+<h3>Opción B — Panel con login</h3>
+<div class="step">
+  <span class="step-number">1</span> Accede a: <code>http://[IP-del-servidor]:4500</code>
+</div>
+<div class="step">
+  <span class="step-number">2</span> Introduce tu <strong>usuario</strong> y <strong>contraseña</strong>
+</div>
+<div class="step">
+  <span class="step-number">3</span> Selecciona tu empresa y extensión, y pulsa <strong>Conectar</strong>
+</div>
+
+<div class="tip">
+  <strong>Ventaja del login:</strong> Tu extensión queda guardada y no tendrás que configurarla cada vez que abras el panel.
+</div>
+
+<h2>3. Recibir Llamadas — Screen Pop</h2>
+
+<p>Una vez conectado, cuando recibes y <strong>contestas</strong> una llamada:</p>
+
+<div class="step">
+  <span class="step-number">1</span> El sistema busca el número de teléfono en Business Central (contactos y proveedores)
+</div>
+<div class="step">
+  <span class="step-number">2</span> Si encuentra una coincidencia, se abrirá automáticamente una nueva pestaña con la ficha del contacto/proveedor en Business Central
+</div>
+<div class="step">
+  <span class="step-number">3</span> Si no se encuentra, se abre la página principal de Business Central
+</div>
+<div class="step">
+  <span class="step-number">4</span> La llamada queda registrada en el historial de actividad del panel
+</div>
+
+<div class="warning">
+  <strong>Importante:</strong> Para que la ventana de Business Central se abra automáticamente, tu navegador NO debe bloquear ventanas emergentes para esta página. Si no se abre, revisa la sección de solución de problemas más abajo.
+</div>
+
+<h2>4. Historial de Actividad</h2>
+
+<p>Debajo de la conexión verás la sección <strong>Actividad</strong>, donde se registran los eventos en tiempo real:</p>
+
+<table>
+  <tr><th>Evento</th><th>Significado</th></tr>
+  <tr><td>Conectado al servidor</td><td>Conexión SSE establecida correctamente</td></tr>
+  <tr><td>Contacto encontrado: 6XXXXXXXX</td><td>Se encontró el número en BC y se abrió la ficha</td></tr>
+  <tr><td>Llamada entrante: 6XXXXXXXX</td><td>Llamada recibida pero número no encontrado en BC</td></tr>
+</table>
+
+<p>Cada evento tiene un enlace <strong>"Abrir"</strong> para acceder manualmente a la ficha de BC si no se abrió automáticamente.</p>
+
+<h2>5. Solución de Problemas</h2>
+
+<h3>No se abre Business Central al contestar</h3>
+<div class="step">
+  Verifica que el navegador no esté bloqueando ventanas emergentes (pop-ups). En Chrome: clic en el icono de bloqueo en la barra de direcciones → "Permitir ventanas emergentes" → Recargar.
+</div>
+
+<h3>El panel dice "Desconectado"</h3>
+<div class="step">
+  La conexión SSE se perdió. Recarga la página (F5) y vuelve a conectar. Si persiste, contacta al administrador.
+</div>
+
+<h3>La extensión no coincide con mis llamadas</h3>
+<div class="step">
+  Asegúrate de que el número de extensión que introduces corresponde exactamente a tu extensión en la centralita (solo el número corto, ej: 125, no el SIP completo).
+</div>
+
+<h3>Error "Empresa no encontrada"</h3>
+<div class="step">
+  La integración con Business Central no está configurada para tu empresa. Contacta al administrador del sistema.
+</div>
+
+<h2>6. Requisitos</h2>
+
+<table>
+  <tr><th>Requisito</th><th>Detalle</th></tr>
+  <tr><td>Navegador</td><td>Chrome 90+, Edge 90+ o Firefox 90+</td></tr>
+  <tr><td>Ventanas emergentes</td><td>Permitidas para la URL del panel</td></tr>
+  <tr><td>Business Central</td><td>Sesión iniciada en el navegador (misma sesión)</td></tr>
+  <tr><td>Red</td><td>Acceso al servidor PekePBX-BC por el puerto 4500</td></tr>
+</table>
+
+<div class="tip">
+  <strong>Recomendación:</strong> Mantén una pestaña con Business Central abierta y con sesión iniciada. Así cuando el screen pop abra una nueva pestaña, no te pedirá login.
+</div>
+
+<div class="footer">
+  PekePBX — Business Central Integration · SmartGroup · 2026
+</div>
+
+</body>
+</html>
