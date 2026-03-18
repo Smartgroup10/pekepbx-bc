@@ -94,8 +94,8 @@ class SseManager {
 
   _broadcastExtensionsUpdate() {
     for (const [, client] of this.clients) {
-      if (client.role !== 'admin' || !client.tenantId) continue;
-      const extensions = this.getConnectedClients(client.tenantId);
+      if (client.role !== 'admin') continue;
+      const extensions = this.getConnectedClients(client.tenantId || null);
       const message = `event: extensions_update\ndata: ${JSON.stringify(extensions)}\n\n`;
       for (const res of client.connections) {
         res.write(message);
