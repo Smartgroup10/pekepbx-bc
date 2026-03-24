@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Operador — PekePBX + Business Central</title>
+<style>
+  @page { margin: 1.5cm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; max-width: 780px; margin: 0 auto; padding: 30px 20px; line-height: 1.6; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #2563eb; }
+  .header h1 { color: #1e40af; font-size: 26px; margin-bottom: 6px; }
+  .header p { color: #64748b; font-size: 14px; }
+
+  /* Sections */
+  h2 { color: #1e40af; font-size: 19px; margin: 35px 0 14px; border-left: 4px solid #2563eb; padding-left: 12px; }
+
+  /* Steps */
+  .steps { counter-reset: step; }
+  .step { display: flex; align-items: flex-start; gap: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; margin: 10px 0; }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    flex-shrink: 0; width: 30px; height: 30px; background: #2563eb; color: white;
+    border-radius: 50%; text-align: center; line-height: 30px; font-weight: 700; font-size: 14px;
+  }
+  .step-content { flex: 1; }
+  .step-content strong { color: #1e40af; }
+
+  /* Info boxes */
+  .tip { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 14px 18px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 14px; }
+  .tip::before { content: "Consejo: "; font-weight: 600; color: #166534; }
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 14px 18px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 14px; }
+  .warning::before { content: "Importante: "; font-weight: 600; color: #92400e; }
+
+  /* Flow diagram */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 20px 0; }
+  .flow-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; }
+  .flow-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .flow-arrow { text-align: center; color: #94a3b8; font-size: 18px; padding: 2px 0; margin-left: 20px; }
+  .flow-text { font-size: 14px; }
+  .flow-text strong { display: block; font-size: 15px; margin-bottom: 2px; }
+  .flow-green .flow-icon { background: #dcfce7; color: #166534; }
+  .flow-blue .flow-icon { background: #dbeafe; color: #1e40af; }
+  .flow-purple .flow-icon { background: #ede9fe; color: #5b21b6; }
+  .flow-orange .flow-icon { background: #fff7ed; color: #9a3412; }
+
+  /* Banner mockup */
+  .mockup { background: linear-gradient(135deg, #1e40af, #2563eb); color: white; border-radius: 12px; padding: 18px 22px; margin: 16px 0; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+  .mockup-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 8px; }
+  .mockup-name { font-size: 18px; font-weight: 600; }
+  .mockup-phone { font-size: 14px; opacity: 0.85; margin-bottom: 12px; }
+  .mockup-btn { display: block; background: white; color: #1e40af; text-align: center; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; }
+  .mockup-tag { display: inline-block; background: #22c55e; color: white; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .mockup-tag.new { background: #f59e0b; }
+  .mockup-tag.vendor { background: #6366f1; }
+
+  /* Status indicators */
+  .status-example { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 13px; margin: 4px 4px 4px 0; }
+  .status-green { background: #f0fdf4; color: #166534; }
+  .status-green::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+  .status-red { background: #fef2f2; color: #991b1b; }
+  .status-red::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+
+  /* FAQ */
+  .faq { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; margin: 10px 0; }
+  .faq-q { font-weight: 600; color: #334155; margin-bottom: 6px; }
+  .faq-a { font-size: 14px; color: #475569; }
+
+  code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PekePBX + Business Central</h1>
+  <p>Manual para Operadores</p>
+</div>
+
+<!-- ============================================================ -->
+<h2>1. Primer acceso</h2>
+
+<p>Tu administrador te enviara un enlace personalizado para tu empresa. Solo tienes que abrirlo, poner tu extension y conectar.</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-content">Abre el enlace que te han enviado en <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-content">Veras que tu empresa ya aparece seleccionada. Escribe tu numero de <strong>extension</strong> (por ejemplo: 125) y pulsa <strong>Conectar</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-content">El navegador te pedira permiso para mostrar <strong>notificaciones</strong>. Pulsa <strong>Permitir</strong> para recibir avisos de llamadas.</div>
+  </div>
+</div>
+
+<div class="tip">Guarda el enlace como favorito en tu navegador. A partir de la segunda vez, se conectara automaticamente sin que tengas que hacer nada.</div>
+
+<div class="warning">Si el navegador te avisa de que esta bloqueando ventanas emergentes, debes permitirlas para que la ficha de Business Central se abra sola.</div>
+
+<!-- ============================================================ -->
+<h2>2. Como funciona cuando recibes una llamada</h2>
+
+<p>Todo es automatico. Cuando alguien te llama y contestas, el sistema hace lo siguiente:</p>
+
+<div class="flow">
+  <div class="flow-item flow-blue">
+    <div class="flow-icon">1</div>
+    <div class="flow-text">
+      <strong>Suena tu telefono</strong>
+      El sistema empieza a buscar el numero en Business Central mientras suena.
+    </div>
+  </div>
+  <div class="flow-arrow">&#8595;</div>
+  <div class="flow-item flow-green">
+    <div class="flow-icon">2</div>
+    <div class="flow-text">
+      <strong>Contestas la llamada</strong>
+      Se abre automaticamente la ficha del contacto en una nueva pestana del navegador.
+    </div>
+  </div>
+  <div class="flow-arrow">&#8595;</div>
+  <div class="flow-item flow-purple">
+    <div class="flow-icon">3</div>
+    <div class="flow-text">
+      <strong>Aparece un banner azul en tu panel</strong>
+      Con el nombre del contacto, su numero y un boton para abrir la ficha manualmente si lo necesitas.
+    </div>
+  </div>
+  <div class="flow-arrow">&#8595;</div>
+  <div class="flow-item flow-orange">
+    <div class="flow-icon">4</div>
+    <div class="flow-text">
+      <strong>La llamada queda registrada</strong>
+      Se guarda automaticamente en el historial de actividad de tu panel.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>3. Que veras en pantalla</h2>
+
+<p>Cuando recibes una llamada, aparecera un <strong>banner azul</strong> como este:</p>
+
+<h3 style="color:#334155; font-size:15px; margin: 18px 0 8px;">Si el contacto existe en Business Central:</h3>
+<div class="mockup">
+  <div class="mockup-label">Llamada entrante</div>
+  <div class="mockup-name">612 345 678 <span class="mockup-tag">Contacto</span></div>
+  <div class="mockup-phone">Contacto encontrado en Business Central</div>
+  <div class="mockup-btn">Abrir ficha en BC</div>
+</div>
+
+<h3 style="color:#334155; font-size:15px; margin: 18px 0 8px;">Si es un proveedor:</h3>
+<div class="mockup">
+  <div class="mockup-label">Llamada entrante</div>
+  <div class="mockup-name">Distribuciones Lopez S.L. <span class="mockup-tag vendor">Proveedor</span></div>
+  <div class="mockup-phone">912 456 789</div>
+  <div class="mockup-btn">Abrir ficha proveedor</div>
+</div>
+
+<h3 style="color:#334155; font-size:15px; margin: 18px 0 8px;">Si el numero es nuevo (no esta en BC):</h3>
+<div class="mockup">
+  <div class="mockup-label">Llamada entrante</div>
+  <div class="mockup-name">687 111 222 <span class="mockup-tag new">Nuevo</span></div>
+  <div class="mockup-phone">Contacto no encontrado en Business Central</div>
+  <div style="display:flex; gap:8px;">
+    <div class="mockup-btn" style="flex:1; font-size:13px;">Crear contacto</div>
+    <div class="mockup-btn" style="flex:1; font-size:13px;">Abrir BC</div>
+  </div>
+</div>
+
+<p style="margin-top: 14px; font-size: 14px; color: #64748b;">El banner desaparece solo despues de 1 minuto o puedes cerrarlo con la <strong>&times;</strong> de la esquina.</p>
+
+<!-- ============================================================ -->
+<h2>4. Estado de la conexion</h2>
+
+<p>En la parte superior del panel siempre veras el estado de tu conexion:</p>
+
+<p>
+  <span class="status-green">Conectado - Extension 125</span> &rarr; Todo funciona correctamente.<br>
+  <span class="status-red">Desconectado - Reintentando...</span> &rarr; Se perdio la conexion. Se reconecta solo. Si no se recupera, recarga la pagina (F5).
+</p>
+
+<!-- ============================================================ -->
+<h2>5. Preguntas frecuentes</h2>
+
+<div class="faq">
+  <div class="faq-q">No se me abre la ficha de Business Central automaticamente</div>
+  <div class="faq-a">Tu navegador esta bloqueando las ventanas emergentes. Busca el icono de bloqueo en la barra de direcciones y selecciona <strong>"Permitir siempre ventanas emergentes de este sitio"</strong>. Despues recarga la pagina.</div>
+</div>
+
+<div class="faq">
+  <div class="faq-q">Me pide login en Business Central cada vez que se abre</div>
+  <div class="faq-a">Manten una pestana con Business Central abierta y con la sesion iniciada. Asi cuando se abra la ficha automaticamente, no te pedira usuario y contrasena.</div>
+</div>
+
+<div class="faq">
+  <div class="faq-q">Recibo llamadas pero el panel no hace nada</div>
+  <div class="faq-a">Verifica que el numero de extension que has puesto es exactamente el de tu telefono (solo el numero corto, ej: 125). Si no coincide, el sistema no sabe que la llamada es para ti.</div>
+</div>
+
+<div class="faq">
+  <div class="faq-q">El panel dice "Desconectado" y no se recupera</div>
+  <div class="faq-a">Recarga la pagina con <strong>F5</strong>. Si sigue sin funcionar, contacta a tu administrador.</div>
+</div>
+
+<div class="faq">
+  <div class="faq-q">Puedo usar el panel en el movil?</div>
+  <div class="faq-a">Si, el panel funciona en el navegador del movil, pero ten en cuenta que Business Central necesita pantalla grande para trabajar comodamente.</div>
+</div>
+
+<div class="faq">
+  <div class="faq-q">La ficha se abrio pero no es el contacto correcto</div>
+  <div class="faq-a">Esto puede pasar si varios contactos comparten el mismo numero de telefono en Business Central. Comunica al administrador para que revise los datos duplicados.</div>
+</div>
+
+<!-- ============================================================ -->
+<h2>6. Resumen rapido</h2>
+
+<table style="width:100%; border-collapse:collapse; margin:14px 0;">
+  <tr><th style="background:#f1f5f9; padding:10px 14px; text-align:left; font-size:13px; color:#475569; border-bottom:2px solid #e2e8f0;">Que necesitas</th><th style="background:#f1f5f9; padding:10px 14px; text-align:left; font-size:13px; color:#475569; border-bottom:2px solid #e2e8f0;">Detalle</th></tr>
+  <tr><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Navegador</td><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Google Chrome o Microsoft Edge</td></tr>
+  <tr><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Ventanas emergentes</td><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Permitidas para la pagina del panel</td></tr>
+  <tr><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Business Central</td><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Sesion abierta en otra pestana</td></tr>
+  <tr><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">Tu extension</td><td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">El numero corto de tu telefono (ej: 125)</td></tr>
+</table>
+
+<div class="tip">Una vez conectado todo es automatico. Tu solo contesta el telefono y la ficha del cliente aparecera en pantalla.</div>
+
+<div class="footer">
+  PekePBX + Business Central &middot; SmartGroup &middot; 2026
+</div>
+
+</body>
+</html>
