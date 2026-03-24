@@ -11,6 +11,7 @@ const { FETCH_TIMEOUT, VENDOR_CACHE_TTL } = require('../constants');
 const configCache = new Map();
 const tokenCache = new Map();
 const vendorPhoneCache = new Map();
+const customerPhoneCache = new Map();
 
 // ============================================================================
 // FETCH WITH TIMEOUT
@@ -237,7 +238,7 @@ async function obtenerURL(phone, config) {
   const result = await soapCall(config, 'urn:microsoft-dynamics-schemas/codeunit/WSRegistroLlamadas:ObtenerURL', bodyXml);
 
   const match = result.match(/<return_value>([^<]*)<\/return_value>/);
-  return match ? match[1] : '';
+  return match ? unescapeXml(match[1]) : '';
 }
 
 async function registrarLlamada(extension, phone, config) {
@@ -332,53 +333,148 @@ async function loadVendorPhoneMap(config) {
   return vendors;
 }
 
-async function searchVendorByPhone(phone, config) {
+async function searchVendorsByPhone(phone, config) {
   try {
     const normalized = normalizePhone(phone);
+    const results = [];
+    const seen = new Set();
+
+    // Strategy 1: Quick OData filter
     const token = await getAccessToken(config);
     const baseUrl = getODataBaseUrl(config);
-
-    // Strategy 1: Quick OData filter on main phone fields
     const filterParts = VENDOR_PHONE_FIELDS.map(f => `${f} eq '${phone}'`).join(' or ');
-    const url = `${baseUrl}/Vendor?$filter=${encodeURIComponent(filterParts)}&$select=No,Name&$top=1`;
+    const url = `${baseUrl}/Vendor?$filter=${encodeURIComponent(filterParts)}&$select=No,Name&$top=10`;
 
     const response = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${token}` } });
-
     if (response.ok) {
       const data = await response.json();
-      if (data.value && data.value.length > 0) {
-        const vendor = data.value[0];
-        return {
-          found: true,
-          vendorNo: vendor.No,
-          vendorName: vendor.Name,
-          vendorUrl: buildVendorCardUrl(vendor.No, config)
-        };
+      for (const v of (data.value || [])) {
+        if (!seen.has(v.No)) {
+          seen.add(v.No);
+          results.push({ no: v.No, name: v.Name, url: buildVendorCardUrl(v.No, config), type: 'vendor' });
+        }
       }
     }
 
-    // Strategy 2: Normalized search via cached vendor list (handles spaces/formatting)
+    // Strategy 2: Normalized cache search
     const vendors = await loadVendorPhoneMap(config);
-    const match = vendors.find(v => v.phones.includes(normalized));
-    if (match) {
-      return {
-        found: true,
-        vendorNo: match.number,
-        vendorName: match.displayName,
-        vendorUrl: buildVendorCardUrl(match.number, config)
-      };
+    for (const v of vendors) {
+      if (v.phones.includes(normalized) && !seen.has(v.number)) {
+        seen.add(v.number);
+        results.push({ no: v.number, name: v.displayName, url: buildVendorCardUrl(v.number, config), type: 'vendor' });
+      }
     }
 
-    return { found: false };
+    return results;
   } catch (err) {
     console.error(`[BC:${config.tenant_id}] Vendor search error:`, err.message);
-    return { found: false };
+    return [];
   }
 }
 
 function buildVendorCardUrl(vendorNo, config) {
   const base = `https://businesscentral.dynamics.com/${config.azure_tenant_id}/${config.bc_environment}`;
-  return `${base}/?company=${encodeURIComponent(config.bc_company)}&page=26&filter='No.' IS '${vendorNo}'`;
+  const bookmark = buildBookmark(23, vendorNo); // Table 23 = Vendor
+  return `${base}/?company=${encodeURIComponent(config.bc_company)}&page=26&bookmark=${encodeURIComponent(bookmark)}`;
+}
+
+// ============================================================================
+// OData v4 — CUSTOMER SEARCH (Phone_No)
+// ============================================================================
+
+const CUSTOMER_PHONE_FIELDS = ['PhoneNo', 'PhoneNo2'];
+
+async function loadCustomerPhoneMap(config) {
+  const tid = config.tenant_id;
+  const cached = customerPhoneCache.get(tid);
+  if (cached && Date.now() - cached.loadedAt < VENDOR_CACHE_TTL) return cached.customers;
+
+  const token = await getAccessToken(config);
+  const baseUrl = getODataBaseUrl(config);
+  const selectFields = ['No', 'Name', ...CUSTOMER_PHONE_FIELDS].join(',');
+
+  let customers = [];
+  let url = `${baseUrl}/Customer?$select=${selectFields}&$top=1000`;
+
+  while (url) {
+    const response = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!response.ok) break;
+    const data = await response.json();
+    for (const c of data.value) {
+      const phones = [];
+      for (const field of CUSTOMER_PHONE_FIELDS) {
+        if (c[field] && c[field].trim()) {
+          phones.push(normalizePhone(c[field]));
+        }
+      }
+      if (phones.length > 0) {
+        customers.push({ number: c.No, displayName: c.Name, phones });
+      }
+    }
+    url = data['@odata.nextLink'] || null;
+  }
+
+  customerPhoneCache.set(tid, { customers, loadedAt: Date.now() });
+  console.log(`[BC:${tid}] Customer phone cache loaded: ${customers.length} customers with phones`);
+  return customers;
+}
+
+async function searchCustomersByPhone(phone, config) {
+  try {
+    const normalized = normalizePhone(phone);
+    const results = [];
+    const seen = new Set();
+
+    // Strategy 1: Quick OData filter
+    const token = await getAccessToken(config);
+    const baseUrl = getODataBaseUrl(config);
+    const filterParts = CUSTOMER_PHONE_FIELDS.map(f => `${f} eq '${phone}'`).join(' or ');
+    const url = `${baseUrl}/Customer?$filter=${encodeURIComponent(filterParts)}&$select=No,Name&$top=10`;
+
+    const response = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (response.ok) {
+      const data = await response.json();
+      for (const c of (data.value || [])) {
+        if (!seen.has(c.No)) {
+          seen.add(c.No);
+          results.push({ no: c.No, name: c.Name, url: buildCustomerCardUrl(c.No, config), type: 'customer' });
+        }
+      }
+    }
+
+    // Strategy 2: Normalized cache search (catches formatting differences)
+    const customers = await loadCustomerPhoneMap(config);
+    for (const c of customers) {
+      if (c.phones.includes(normalized) && !seen.has(c.number)) {
+        seen.add(c.number);
+        results.push({ no: c.number, name: c.displayName, url: buildCustomerCardUrl(c.number, config), type: 'customer' });
+      }
+    }
+
+    return results;
+  } catch (err) {
+    console.error(`[BC:${config.tenant_id}] Customer search error:`, err.message);
+    return [];
+  }
+}
+
+function buildCustomerCardUrl(customerNo, config) {
+  const base = `https://businesscentral.dynamics.com/${config.azure_tenant_id}/${config.bc_environment}`;
+  const bookmark = buildBookmark(18, customerNo); // Table 18 = Customer
+  return `${base}/?company=${encodeURIComponent(config.bc_company)}&page=21&bookmark=${encodeURIComponent(bookmark)}`;
+}
+
+// Build BC bookmark: matches SOAP format exactly
+// Format: "<prefix>;<base64>" where base64 encodes [tableId LE, 0x00, 0x00, 0x02, 0x7b, strLen, recordNo UTF16LE trimmed]
+function buildBookmark(tableId, recordNo) {
+  const header = Buffer.from([tableId & 0xFF, (tableId >> 8) & 0xFF, 0x00, 0x00, 0x02, 0x7b]);
+  const noUtf16 = Buffer.from(recordNo, 'utf16le');
+  const trimmed = noUtf16.subarray(0, noUtf16.length - 1);
+  const length = Buffer.from([recordNo.length]);
+  const payload = Buffer.concat([header, length, trimmed]);
+  const b64 = payload.toString('base64').replace(/=+$/, '');
+  const prefix = payload.length + 5;
+  return `${prefix};${b64}`;
 }
 
 function escapeXml(str) {
@@ -388,6 +484,15 @@ function escapeXml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+function unescapeXml(str) {
+  return String(str)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
 }
 
 module.exports = {
@@ -402,6 +507,8 @@ module.exports = {
   registrarLlamada,
   testConnection,
   getWebClientUrl,
-  searchVendorByPhone,
+  searchCustomersByPhone,
+  buildCustomerCardUrl,
+  searchVendorsByPhone,
   buildVendorCardUrl
 };

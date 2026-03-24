@@ -101,7 +101,7 @@
       display: inline-block; font-size: 11px; padding: 2px 8px;
       border-radius: 4px; margin-left: 8px;
     }
-    .call-banner-tag.found { background: #22c55e; color: #fff; }
+    .call-banner-tag.customer { background: #22c55e; color: #fff; }
     .call-banner-tag.vendor { background: #6366f1; color: #fff; }
     .call-banner-tag.notfound { background: #f59e0b; color: #fff; }
     .call-banner-btn {
@@ -314,17 +314,28 @@ $btnDisconnect.addEventListener('click', () => {
 // --- Call Banner ---
 function showCallBanner(data) {
   const phone = data.phone;
-  const type = data.type; // 'contact' | 'vendor' | null
+  const results = data.allResults || [];
 
-  if (type === 'vendor') {
-    const name = data.name || phone;
-    $bannerName.innerHTML = esc(name) + '<span class="call-banner-tag vendor">Proveedor</span>';
+  if (results.length > 0) {
+    const names = results.map(r => r.name).filter(Boolean);
+    $bannerName.innerHTML = esc(names[0] || phone);
+    if (results.length > 1) {
+      $bannerName.innerHTML += ` <span class="call-banner-tag customer">+${results.length} fichas</span>`;
+    } else {
+      const tag = results[0].type === 'vendor' ? 'vendor' : 'customer';
+      const label = results[0].type === 'vendor' ? 'Proveedor' : 'Cliente';
+      $bannerName.innerHTML += `<span class="call-banner-tag ${tag}">${label}</span>`;
+    }
     $bannerNumber.textContent = phone;
-    $bannerActions.innerHTML = `<a class="call-banner-btn" href="${esc(data.bcUrl)}" target="_blank">Abrir ficha proveedor</a>`;
-  } else if (data.found) {
-    $bannerName.innerHTML = esc(phone) + '<span class="call-banner-tag found">Contacto</span>';
-    $bannerNumber.textContent = 'Contacto encontrado en Business Central';
-    $bannerActions.innerHTML = `<a class="call-banner-btn" href="${esc(data.bcUrl)}" target="_blank">Abrir ficha en BC</a>`;
+    $bannerActions.innerHTML = results.map(r => {
+      const label = r.type === 'vendor' ? 'Proveedor ' + esc(r.no) : 'Cliente ' + esc(r.no);
+      return `<a href="${esc(r.url)}" target="_blank">${esc(r.name || label)}</a>`;
+    }).join('');
+    $bannerActions.className = results.length > 1 ? 'call-banner-actions' : '';
+    if (results.length === 1) {
+      const label = results[0].type === 'vendor' ? 'Abrir ficha proveedor' : 'Abrir ficha cliente';
+      $bannerActions.innerHTML = `<a class="call-banner-btn" href="${esc(results[0].url)}" target="_blank">${label}</a>`;
+    }
   } else {
     $bannerName.innerHTML = esc(phone) + '<span class="call-banner-tag notfound">Nuevo</span>';
     $bannerNumber.textContent = 'Contacto no encontrado en Business Central';
@@ -389,23 +400,30 @@ function connect() {
 
   es.addEventListener('bc_screen_pop', (e) => {
     const data = JSON.parse(e.data);
-    const type = data.type; // 'contact' | 'vendor' | null
+    const type = data.type; // 'customer' | 'vendor' | null
 
     let label, subtitle;
-    if (type === 'vendor') {
+    if (type === 'customer') {
+      label = `Cliente encontrado: ${data.name || data.phone}`;
+      subtitle = 'Cliente encontrado';
+    } else if (type === 'vendor') {
       label = `Proveedor encontrado: ${data.name || data.phone}`;
       subtitle = 'Proveedor encontrado';
-    } else if (data.found) {
-      label = `Contacto encontrado: ${data.phone}`;
-      subtitle = 'Contacto encontrado';
     } else {
       label = `Llamada entrante: ${data.phone}`;
-      subtitle = 'Contacto nuevo';
+      subtitle = 'No encontrado';
     }
 
-    // Always open BC directly (ficha if found, new contact page if not)
-    const url = data.found ? data.bcUrl : (data.newContactUrl || data.bcUrl);
-    window.open(url, '_blank');
+    // Open ALL matching records (customers + vendors)
+    if (data.allResults && data.allResults.length > 0) {
+      for (const r of data.allResults) {
+        window.open(r.url, '_blank');
+      }
+    } else if (data.found) {
+      window.open(data.bcUrl, '_blank');
+    } else {
+      window.open(data.newContactUrl || data.bcUrl, '_blank');
+    }
 
     showCallBanner(data);
     playBeep();

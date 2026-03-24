@@ -92,8 +92,10 @@ function handleDialBegin(event, config) {
   const extMatch = sipPeer.match(/ext\d{5}(\d+)/);
   const extension = extMatch ? extMatch[1] : sipPeer;
 
-  activeCalls.set(channel, {
+  // Key by destChannel (extension channel) to avoid ring group overwrites
+  activeCalls.set(destChannel, {
     callerNumber: callerNum,
+    callerChannel: channel,
     sipPeer,
     extension,
     tenantId: config.tenant_id,
@@ -113,61 +115,73 @@ function handleDialBegin(event, config) {
   setTimeout(() => recentSearches.delete(searchKey), SEARCH_DEBOUNCE);
 
   // Search BC URL now (while ringing) and store result in activeCalls
-  preSearchBcUrl(callerNum, channel, config).catch(err => {
+  preSearchBcUrl(callerNum, destChannel, config).catch(err => {
     console.error(`[BC:${config.tenant_id}] Pre-search error:`, err.message);
   });
 }
 
 async function preSearchBcUrl(phone, channel, config) {
-  const bcUrl = await bc.obtenerURL(phone, config);
-  const contactFound = !!bcUrl;
   const fallbackUrl = bc.getWebClientUrl(config);
   const newContactUrl = `${bc.getWebClientUrl(config)}&page=5052&phoneno=${encodeURIComponent(phone)}`;
 
+  const allResults = []; // { no, name, url, type }
+
+  // 1. SOAP ObtenerURL
+  const bcUrl = await bc.obtenerURL(phone, config);
   console.log(`[BC:${config.tenant_id}] ObtenerURL(${phone}) -> ${bcUrl || '(empty)'}`);
+  if (bcUrl) {
+    allResults.push({ no: 'SOAP', name: '', url: bcUrl, type: 'customer' });
+  }
 
-  let finalUrl = bcUrl || fallbackUrl;
-  let found = contactFound;
-  let type = contactFound ? 'contact' : null;
-  let name = null;
-
-  // Fallback: if not found as contact, search vendors via REST API
-  if (!contactFound) {
-    const vendorResult = await bc.searchVendorByPhone(phone, config);
-    if (vendorResult.found) {
-      finalUrl = vendorResult.vendorUrl;
-      found = true;
-      type = 'vendor';
-      name = vendorResult.vendorName;
-      console.log(`[BC:${config.tenant_id}] Vendor found: ${name} (${vendorResult.vendorNo})`);
+  // 2. Search ALL customers via OData
+  const customers = await bc.searchCustomersByPhone(phone, config);
+  for (const c of customers) {
+    // Skip if SOAP already returned this exact URL
+    if (!allResults.some(r => r.url === c.url)) {
+      allResults.push(c);
+      console.log(`[BC:${config.tenant_id}] Customer found: ${c.name} (${c.no})`);
     }
   }
 
+  // 3. Search ALL vendors via OData
+  const vendors = await bc.searchVendorsByPhone(phone, config);
+  for (const v of vendors) {
+    allResults.push(v);
+    console.log(`[BC:${config.tenant_id}] Vendor found: ${v.name} (${v.no})`);
+  }
+
+  const found = allResults.length > 0;
+  const primaryType = allResults[0]?.type || null;
+  const primaryName = allResults[0]?.name || null;
+  const primaryUrl = allResults[0]?.url || fallbackUrl;
+
   // Log in call_log
   const startedAt = new Date().toISOString();
-  stmts.insertCallLog.run(config.tenant_id, null, phone, finalUrl, found ? 1 : 0, 0, 0, startedAt, null);
+  stmts.insertCallLog.run(config.tenant_id, null, phone, primaryUrl, found ? 1 : 0, 0, 0, startedAt, null);
 
   // Store results in the active call for when it's answered
   const call = activeCalls.get(channel);
   if (call) {
-    call.bcUrl = finalUrl;
+    call.bcUrl = primaryUrl;
     call.found = found;
-    call.type = type;
-    call.name = name;
+    call.type = primaryType;
+    call.name = primaryName;
     call.newContactUrl = newContactUrl;
+    call.allResults = allResults; // All matching records
   }
 }
 
 function handleDialEnd(event) {
-  const channel = event.Channel || '';
-  const call = activeCalls.get(channel);
+  const destChannel = event.DestChannel || '';
+  const call = activeCalls.get(destChannel);
   if (!call) return;
 
   if (event.DialStatus === 'ANSWER') {
     call.answered = true;
 
-    // NOW send screen pop — call was answered
+    // NOW send screen pop — call was answered by THIS extension
     if (call.bcUrl) {
+      console.log(`[BC:${call.tenantId}] Screen pop -> ${call.sipPeer} (ext ${call.extension}), phone: ${call.callerNumber}, results: ${(call.allResults || []).length}`);
       sseManager.sendToSipPeer(call.sipPeer, 'bc_screen_pop', {
         phone: call.callerNumber,
         bcUrl: call.bcUrl,
@@ -175,7 +189,8 @@ function handleDialEnd(event) {
         type: call.type,
         name: call.name,
         newContactUrl: call.newContactUrl,
-        channel
+        allResults: call.allResults || [],
+        channel: destChannel
       }, call.tenantId);
     }
   }

@@ -145,13 +145,13 @@ router.post('/test-screenpop', (req, res) => {
     const data = {
       phone: phone || '667601605',
       bcUrl: type === 'vendor'
-        ? `${baseUrl}&page=26&filter='No.' IS '011'`
-        : type === 'contact'
-          ? `${baseUrl}&page=5050&filter='No.' IS 'CO016781'`
+        ? bc.buildVendorCardUrl('011', config)
+        : type === 'customer'
+          ? bc.buildCustomerCardUrl('101001', config)
           : baseUrl,
-      found: type === 'contact' || type === 'vendor',
+      found: type === 'customer' || type === 'vendor',
       type: type || null,
-      name: name || (type === 'vendor' ? 'Eva Maria Garcia Garcia' : type === 'contact' ? 'Hugo Andre de Castro' : ''),
+      name: name || (type === 'vendor' ? 'Eva Maria Garcia Garcia' : type === 'customer' ? 'JAUME PANADES TORT' : ''),
       newContactUrl: `${baseUrl}&page=5052&phoneno=${encodeURIComponent(phone || '612345678')}`,
       channel: 'TEST/fake-channel'
     };
