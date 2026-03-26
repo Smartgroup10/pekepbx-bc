@@ -157,8 +157,11 @@ const server = app.listen(PORT, () => {
   ami.connect();
 
   // Setup BC hooks
-  const { setupBcHooks } = require('./services/bcHooks');
+  const { setupBcHooks, warmupCaches } = require('./services/bcHooks');
   setupBcHooks(ami);
+
+  // Pre-warm BC caches (OAuth token + Customer/Vendor phone maps)
+  warmupCaches().catch(err => console.error('BC warmup failed:', err.message));
 });
 
 server.on('error', (err) => {

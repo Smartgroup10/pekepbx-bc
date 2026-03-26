@@ -39,7 +39,7 @@ function setupBcHooks(amiService) {
 
       if (event.Event !== 'DialBegin') {
         if (event.Event === 'DialEnd') {
-          handleDialEnd(event);
+          await handleDialEnd(event);
         } else if (event.Event === 'Hangup') {
           const call = activeCalls.get(channel);
           if (call) {
@@ -115,9 +115,13 @@ function handleDialBegin(event, config) {
   setTimeout(() => recentSearches.delete(searchKey), SEARCH_DEBOUNCE);
 
   // Search BC URL now (while ringing) and store result in activeCalls
-  preSearchBcUrl(callerNum, destChannel, config).catch(err => {
-    console.error(`[BC:${config.tenant_id}] Pre-search error:`, err.message);
-  });
+  // Store the promise so handleDialEnd can await it if needed
+  const call = activeCalls.get(destChannel);
+  if (call) {
+    call.searchPromise = preSearchBcUrl(callerNum, destChannel, config).catch(err => {
+      console.error(`[BC:${config.tenant_id}] Pre-search error:`, err.message);
+    });
+  }
 }
 
 async function preSearchBcUrl(phone, channel, config) {
@@ -126,25 +130,28 @@ async function preSearchBcUrl(phone, channel, config) {
 
   const allResults = []; // { no, name, url, type }
 
-  // 1. SOAP ObtenerURL
-  const bcUrl = await bc.obtenerURL(phone, config);
+  // Run all 3 searches in parallel
+  const [bcUrl, customers, vendors] = await Promise.all([
+    bc.obtenerURL(phone, config).catch(err => { console.error(`[BC:${config.tenant_id}] SOAP error:`, err.message); return ''; }),
+    bc.searchCustomersByPhone(phone, config).catch(err => { console.error(`[BC:${config.tenant_id}] Customer search error:`, err.message); return []; }),
+    bc.searchVendorsByPhone(phone, config).catch(err => { console.error(`[BC:${config.tenant_id}] Vendor search error:`, err.message); return []; })
+  ]);
+
+  // 1. SOAP result first (highest priority)
   console.log(`[BC:${config.tenant_id}] ObtenerURL(${phone}) -> ${bcUrl || '(empty)'}`);
   if (bcUrl) {
     allResults.push({ no: 'SOAP', name: '', url: bcUrl, type: 'customer' });
   }
 
-  // 2. Search ALL customers via OData
-  const customers = await bc.searchCustomersByPhone(phone, config);
+  // 2. Customer results
   for (const c of customers) {
-    // Skip if SOAP already returned this exact URL
     if (!allResults.some(r => r.url === c.url)) {
       allResults.push(c);
       console.log(`[BC:${config.tenant_id}] Customer found: ${c.name} (${c.no})`);
     }
   }
 
-  // 3. Search ALL vendors via OData
-  const vendors = await bc.searchVendorsByPhone(phone, config);
+  // 3. Vendor results
   for (const v of vendors) {
     allResults.push(v);
     console.log(`[BC:${config.tenant_id}] Vendor found: ${v.name} (${v.no})`);
@@ -171,13 +178,18 @@ async function preSearchBcUrl(phone, channel, config) {
   }
 }
 
-function handleDialEnd(event) {
+async function handleDialEnd(event) {
   const destChannel = event.DestChannel || '';
   const call = activeCalls.get(destChannel);
   if (!call) return;
 
   if (event.DialStatus === 'ANSWER') {
     call.answered = true;
+
+    // Wait for pre-search to finish if still in progress
+    if (call.searchPromise) {
+      await call.searchPromise;
+    }
 
     // NOW send screen pop — call was answered by THIS extension
     if (call.bcUrl) {
@@ -229,4 +241,30 @@ setInterval(() => {
   }
 }, STALE_CALL_CLEANUP_INTERVAL);
 
-module.exports = { setupBcHooks, reloadConfigs };
+async function warmupCaches() {
+  const configs = getEnabledConfigs();
+  if (configs.length === 0) {
+    console.log('BC warmup: No enabled tenants, skipping');
+    return;
+  }
+
+  for (const config of configs) {
+    try {
+      console.log(`[BC:${config.tenant_id}] Warming up caches...`);
+      const start = Date.now();
+
+      // Pre-fetch OAuth token + Customer/Vendor phone maps in parallel
+      await Promise.all([
+        bc.searchCustomersByPhone('0000000', config),
+        bc.searchVendorsByPhone('0000000', config)
+      ]);
+
+      const elapsed = Date.now() - start;
+      console.log(`[BC:${config.tenant_id}] Cache warmup done in ${elapsed}ms`);
+    } catch (err) {
+      console.error(`[BC:${config.tenant_id}] Cache warmup error:`, err.message);
+    }
+  }
+}
+
+module.exports = { setupBcHooks, reloadConfigs, warmupCaches };
